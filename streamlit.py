@@ -223,4 +223,4 @@ if st.button("Analyze Workspace"):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
-st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
+st.markdown("<div style='position: fixed; bottom: 10px; left: 10px;'>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
