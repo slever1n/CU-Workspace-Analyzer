@@ -21,9 +21,9 @@ if openai_api_key:
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
-def fetch_workspace_details(api_key, team_id):
+def fetch_workspace_details(clickup_api_key, team_id):
     """Fetch detailed workspace data including spaces, tasks, and completion stats."""
-    headers = {"Authorization": api_key}
+    headers = {"Authorization": clickup_api_key}
     
     spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
     try:
