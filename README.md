@@ -1,3 +1,9 @@
+
+# ClickUp Workspace Analyzer    
+
+Analyzes your ClickUp workspace with the help of AI
+
+
 # ClickUp Workspace Analyzer
 
 A Streamlit application that analyzes your ClickUp workspace, generates a company profile using AI, and provides tailored recommendations to improve productivity and organization based on your workspace data, your company's use case, and the generated company profile.
@@ -25,6 +31,9 @@ A Streamlit application that analyzes your ClickUp workspace, generates a compan
 - [Google Generative AI Python Client](https://pypi.org/project/google-generativeai/) *(if using Gemini)*
 - [BeautifulSoup4](https://pypi.org/project/beautifulsoup4/)
 
+
+
+
 ## Installation
 
 1. **Clone the repository:**
@@ -33,56 +42,78 @@ A Streamlit application that analyzes your ClickUp workspace, generates a compan
    git clone https://github.com/yourusername/clickup-workspace-analyzer.git
    cd clickup-workspace-analyzer
 
+
 Install the required packages:
 
-bash
-Copy
-Edit
-pip install streamlit requests openai google-generativeai beautifulsoup4
-Configure your API keys:
+
+**2. Install the required packages:**
+
+
+```bash
+ pip install streamlit requests openai google-generativeai beautifulsoup4
+```
+    
+
+**3. Configure your API keys:**
 
 Create a secrets.toml file in a folder named .streamlit in your project directory and add your API keys:
 
-toml
-Copy
-Edit
+```bash
 OPENAI_API_KEY = "your_openai_api_key"
 OPENAI_ORG_ID = "your_openai_org_id"
 GEMINI_API_KEY = "your_gemini_api_key"
-If you do not have one of the keys, the application will automatically fall back to the available service.
+```
+## Usage/Examples
 
-Usage
-Run the application:
+**1. Run the Application**
 
-bash
-Copy
-Edit
+```bash
 streamlit run your_script.py
-Interact with the App:
 
-ClickUp API Key (Optional): Enter your ClickUp API key to fetch workspace data.
+```
+
+**2. Interact with the App:**
+
+ClickUp API Key (Optional): Enter your `ClickUp API key` to fetch workspace data.
+
 Company Use Case: Describe your company's use case (e.g., consulting, project management, customer service).
-Company Name (Optional): Enter a company name to generate a short company profile using AI.
-Analyze Workspace:
 
-Click the "Analyze Workspace" button to:
+Company Name (Optional): Enter a company name to generate a short company profile using AI.
+
+**3. Analyze Workspace:**
+
+Click the `Analyze Workspace` button to:
 
 Fetch and display workspace metrics.
+
 Generate a company profile.
+
 Generate tailored AI recommendations based on the provided data.
-View Resources:
+
+**4. View Resources:**
 
 Useful ClickUp resources are linked at the bottom of the app.
 
-Notes
-Workspace Analysis:
+
+
+
+## Notes
+
+**1. Workspace Analysis:**
 If no ClickUp API key is provided, the workspace analysis is skipped, but AI recommendations will still be generated based on the provided use case and company profile.
 
-AI Services:
-The app uses the Gemini model gemini-2.0-flash for generating the company profile and AI recommendations. It falls back to OpenAI if Gemini is unavailable.
+**2. AI Services:**
+The app uses the Gemini model `gemini-2.0-flash` for generating the company profile and AI recommendations. It falls back to OpenAI if Gemini is unavailable.
 
-License
+## License
+
 This project is open source. Feel free to use, modify, and distribute it as needed.
 
-Author
-Made by: Yul
+
+
+## Authors
+
+Made by Yul
+
+- [@sleverin](https://github.com/slever1n)
+
