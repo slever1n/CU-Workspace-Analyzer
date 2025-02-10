@@ -3,7 +3,6 @@ import streamlit as st
 import time
 import openai
 import google.generativeai as genai
-from bs4 import BeautifulSoup
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analyzer", page_icon="🚀", layout="wide")
@@ -22,39 +21,33 @@ if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
 def get_company_info(company_name):
-    """Fetches basic company information from the web by searching about the company."""
+    """Generates a short company profile for the given company name using AI."""
     if not company_name:
         return "No company information provided."
-    search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    try:
-        response = requests.get(search_url, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
-        description = ""
-        # Attempt to extract a descriptive snippet from the search results.
-        for tag in soup.find_all("span"):
-            text = tag.get_text()
-            if "is a" in text or "provides" in text or "specializes in" in text:
-                description = text
-                break
-        # If a description is found, format it in a structured markdown style.
-        if description:
-            formatted = f"""**{company_name} Company Profile:**
-
-{description}
-
-**Key Highlights:**
-- *Mission:* [Not available]
-- *Key Features:* [Not available]
-- *Values:* [Not available]
-- *Target Audience:* [Not available]
-- *Overall:* [Not available]
-
-_(Note: The above is a summary fetched from a web search. For more detailed information, please visit the company's website or trusted resources.)_
+    prompt = f"""
+Please build a short company profile for {company_name}. The profile should include the following sections in markdown:
+- **Mission:** A brief mission statement.
+- **Key Features:** List 3-5 key features of the company.
+- **Values:** Describe the core values of the company.
+- **Target Audience:** Describe who the company primarily serves.
+- **Overall Summary:** Provide an overall summary of what the company does.
 """
-            return formatted
+    try:
+        if openai_api_key:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response["choices"][0]["message"]["content"]
+        elif gemini_api_key:
+            model = genai.GenerativeModel("gemini-pro")
+            response = model.generate_content(prompt)
+            return response.text
         else:
-            return "No detailed company info found."
+            return "No AI service available for generating company profile."
     except Exception as e:
         return f"Error fetching company details: {str(e)}"
 
@@ -207,7 +200,7 @@ if st.button("Analyze Workspace"):
 
     # Build and display company profile if company name is provided
     if company_name:
-        with st.spinner("Fetching company profile..."):
+        with st.spinner("Generating company profile..."):
             company_profile = get_company_info(company_name)
         st.subheader("🏢 Company Profile")
         st.markdown(company_profile)
