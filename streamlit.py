@@ -21,7 +21,7 @@ if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
 def get_company_info(company_name):
-    """Generates a short company profile for the given company name using AI."""
+    """Generates a short company profile for the given company name using Gemini (or OpenAI if Gemini is unavailable)."""
     if not company_name:
         return "No company information provided."
     prompt = f"""
@@ -33,7 +33,11 @@ Please build a short company profile for {company_name}. The profile should incl
 - **Overall Summary:** Provide an overall summary of what the company does.
 """
     try:
-        if openai_api_key:
+        if gemini_api_key:
+            model = genai.GenerativeModel("gemini-pro")
+            response = model.generate_content(prompt)
+            return response.text
+        elif openai_api_key:
             response = openai.ChatCompletion.create(
                 model="gpt-4o",
                 messages=[
@@ -42,10 +46,6 @@ Please build a short company profile for {company_name}. The profile should incl
                 ]
             )
             return response["choices"][0]["message"]["content"]
-        elif gemini_api_key:
-            model = genai.GenerativeModel("gemini-pro")
-            response = model.generate_content(prompt)
-            return response.text
         else:
             return "No AI service available for generating company profile."
     except Exception as e:
@@ -169,7 +169,7 @@ Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful
             model = genai.GenerativeModel("gemini-pro")
             response = model.generate_content(prompt)
             return response.text
-    return "⚠️ AI recommendations are not available because both OpenAI and Gemini failed."
+    return "⚠️ AI recommendations are not available because both AI services failed."
 
 # Streamlit UI
 st.title("🚀 ClickUp Workspace Analyzer")
