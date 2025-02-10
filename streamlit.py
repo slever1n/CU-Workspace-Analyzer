@@ -37,7 +37,24 @@ def get_company_info(company_name):
             if "is a" in text or "provides" in text or "specializes in" in text:
                 description = text
                 break
-        return description if description else "No detailed company info found."
+        # If a description is found, format it in a structured markdown style.
+        if description:
+            formatted = f"""**{company_name} Company Profile:**
+
+{description}
+
+**Key Highlights:**
+- *Mission:* [Not available]
+- *Key Features:* [Not available]
+- *Values:* [Not available]
+- *Target Audience:* [Not available]
+- *Overall:* [Not available]
+
+_(Note: The above is a summary fetched from a web search. For more detailed information, please visit the company's website or trusted resources.)_
+"""
+            return formatted
+        else:
+            return "No detailed company info found."
     except Exception as e:
         return f"Error fetching company details: {str(e)}"
 
@@ -127,7 +144,7 @@ Based on the following workspace data:
 
 Considering the company's use case: "{use_case}"
 And the following company profile:
-"{company_profile}"
+{company_profile}
 
 Please provide a detailed analysis.
 
@@ -188,13 +205,15 @@ if st.button("Analyze Workspace"):
     else:
         st.info("ClickUp API Key not provided. Skipping workspace data analysis.")
 
-    # Build company profile if company name is provided
+    # Build and display company profile if company name is provided
     if company_name:
         with st.spinner("Fetching company profile..."):
             company_profile = get_company_info(company_name)
+        st.subheader("🏢 Company Profile")
+        st.markdown(company_profile)
     else:
         company_profile = "No company information provided."
-
+    
     with st.spinner("Generating AI recommendations..."):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
