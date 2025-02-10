@@ -1,5 +1,3 @@
-Source code 2 (async)
-
 import requests
 import streamlit as st
 import time
