@@ -4,7 +4,6 @@ import time
 import openai
 import google.generativeai as genai
 import textwrap
-import asyncio
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
