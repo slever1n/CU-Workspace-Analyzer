@@ -132,3 +132,22 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
             response = model.generate_content(prompt)
             return response.text
     return "⚠️ AI recommendations are not available because both OpenAI and Gemini failed."
+
+# Streamlit UI
+st.title("🚀 ClickUp Workspace Analyzer")
+api_key = st.text_input("🔑 Enter ClickUp API Key:", type="password")
+
+if st.button("Analyze Workspace"):
+    with st.spinner("Fetching workspace data..."):
+        workspace_data = get_clickup_workspace_data(api_key)
+        if "error" in workspace_data:
+            st.error(workspace_data["error"])
+        else:
+            st.subheader("📊 Workspace Summary")
+            st.json(workspace_data)
+            
+            use_case = st.text_area("🏢 Describe your company's use case:")
+            if st.button("Get AI Recommendations"):
+                with st.spinner("Generating recommendations..."):
+                    recommendations = get_ai_recommendations(use_case, "", workspace_data)
+                    st.markdown(recommendations)
