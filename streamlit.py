@@ -4,23 +4,26 @@ import time
 import openai
 import google.generativeai as genai
 import textwrap
-import asyncio
-import httpx
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
 
 # Retrieve API keys from Streamlit secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
+openai_org_id = st.secrets.get("OPENAI_ORG_ID")
 gemini_api_key = st.secrets.get("GEMINI_API_KEY")
 
-# Configure Gemini if API key is available
+# Configure OpenAI and Gemini if API keys are available
+if openai_api_key:
+    openai.organization = openai_org_id
+    openai.api_key = openai_api_key
+
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
 def get_company_info(company_name):
     """
-    Generates a short company profile for the given company name using Gemini (or OpenAI if available).
+    Generates a short company profile for the given company name using Gemini (or OpenAI if Gemini is unavailable).
     """
     if not company_name:
         return "No company information provided."
@@ -53,73 +56,94 @@ def get_company_info(company_name):
     except Exception as e:
         return f"Error fetching company details: {str(e)}"
 
-async def fetch_clickup_data(api_key, url, client):
+def get_clickup_workspace_data(api_key):
     """
-    Asynchronously fetch data from the ClickUp API using an existing client.
+    Fetches real workspace data from the ClickUp API.
+    """
+    if not api_key:
+        return None
+
+    url = "https://api.clickup.com/api/v2/team"
+    headers = {"Authorization": api_key}
+
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            teams = response.json().get("teams", [])
+            if teams:
+                team_id = teams[0]["id"]
+                return fetch_workspace_details(api_key, team_id)
+            else:
+                return {"error": "No teams found in ClickUp workspace."}
+        else:
+            return {"error": f"Error: {response.status_code} - {response.json()}"}
+    except Exception as e:
+        return {"error": f"Exception: {str(e)}"}
+
+def fetch_workspace_details(api_key, team_id):
+    """
+    Fetches workspace details including spaces, folders, lists, and tasks.
     """
     headers = {"Authorization": api_key}
-    response = await client.get(url, headers=headers)
-
-    # Debugging: Print API response
-    print(f"Fetching {url}")
-    print(f"Status Code: {response.status_code}")
-    print(f"Response Text: {response.text}")
-
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return {"error": response.text}
-
-async def fetch_workspace_details(api_key, team_id, client):
-    """
-    Fetch workspace details such as spaces, folders, lists, and tasks.
-    """
-    url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
-    return await fetch_clickup_data(api_key, url, client)
-
-
-async def get_clickup_workspace_data(api_key):
-    if not api_key:
-        return {"error": "API key is missing"}
-
-    async with httpx.AsyncClient() as client:
-        teams_response = await fetch_clickup_data(api_key, "https://api.clickup.com/api/v2/team", client)
-
-        if "error" in teams_response:
-            return teams_response
-
-        teams = teams_response.get("teams", [])
-        if not teams:
-            return {"error": "No teams found in ClickUp workspace."}
-
-        team_id = teams[0].get("id")
-        if not team_id:
-            return {"error": "No team ID found."}
-
-        workspace_details = await fetch_workspace_details(api_key, team_id, client)
-
-        return workspace_details
-
-
+    
+    try:
+        spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
+        spaces_response = requests.get(spaces_url, headers=headers).json()
+        spaces = spaces_response.get("spaces", [])
+        
+        space_count = len(spaces)
+        folder_count, list_count, task_count = 0, 0, 0
+        completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+        
+        for space in spaces:
+            space_id = space["id"]
+            folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
+            folders_response = requests.get(folders_url, headers=headers).json()
+            folders = folders_response.get("folders", [])
+            folder_count += len(folders)
+            
+            for folder in folders:
+                folder_id = folder["id"]
+                lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
+                lists_response = requests.get(lists_url, headers=headers).json()
+                lists = lists_response.get("lists", [])
+                list_count += len(lists)
+                
+                for lst in lists:
+                    list_id = lst["id"]
+                    tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
+                    tasks_response = requests.get(tasks_url, headers=headers).json()
+                    tasks = tasks_response.get("tasks", [])
+                    
+                    task_count += len(tasks)
+                    completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
+                    overdue_tasks += sum(1 for task in tasks 
+                                         if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
+                    high_priority_tasks += sum(1 for task in tasks 
+                                               if task.get("priority", "") in ["urgent", "high"])
+        
+        task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
+        
+        return {
+            "📁 Spaces": space_count,
+            "📂 Folders": folder_count,
+            "🗂️ Lists": list_count,
+            "📝 Total Tasks": task_count,
+            "✅ Completed Tasks": completed_tasks,
+            "📈 Task Completion Rate": f"{round(task_completion_rate, 2)}%",
+            "⚠️ Overdue Tasks": overdue_tasks,
+            "🔥 High Priority Tasks": high_priority_tasks
+        }
+    except Exception as e:
+        return {"error": f"Exception: {str(e)}"}
 
 def get_ai_recommendations(use_case, company_profile, workspace_details):
     """
     Generates AI-powered recommendations based on workspace data, company profile, and use case.
     """
-    workspace_summary = textwrap.dedent(f"""
-        **📁 Spaces:** {workspace_details.get('spaces', 'N/A')}
-        **📂 Folders:** {workspace_details.get('folders', 'N/A')}
-        **🗂️ Lists:** {workspace_details.get('lists', 'N/A')}
-        **📝 Total Tasks:** {workspace_details.get('total_tasks', 'N/A')}
-        **✅ Completed Tasks:** {workspace_details.get('completed_tasks', 'N/A')}
-        **📈 Task Completion Rate:** {workspace_details.get('completion_rate', 'N/A')}%
-        **⚠️ Overdue Tasks:** {workspace_details.get('overdue_tasks', 'N/A')}
-        **🔥 High Priority Tasks:** {workspace_details.get('high_priority_tasks', 'N/A')}
-    """)
-    
     prompt = textwrap.dedent(f"""
         Based on the following workspace data:
-        {workspace_summary if workspace_summary else "(No workspace data available)"}
+        {workspace_details if workspace_details else "(No workspace data available)"}
         
         Considering the company's use case: "{use_case}"
         And the following company profile:
@@ -157,16 +181,46 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
             return response.text
     return "⚠️ AI recommendations are not available because both AI services failed."
 
+# ----------------------- #
+# Streamlit UI
+# ----------------------- #
 st.title("🚀 ClickUp Workspace Analysis")
 
+# Input fields available immediately
 api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password")
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🏢 Describe your company's use case:")
 
 if st.button("🚀 Let's Go!"):
+    workspace_data = None
+    if api_key:
+        with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
+            workspace_data = get_clickup_workspace_data(api_key)
+        if workspace_data is None:
+            st.error("Invalid API Key provided.")
+        elif "error" in workspace_data:
+            st.error(workspace_data["error"])
+        else:
+            st.subheader("📊 Workspace Summary")
+            # Display workspace data as tiles
+            cols = st.columns(4)
+            for idx, (key, value) in enumerate(workspace_data.items()):
+                with cols[idx % 4]:
+                    st.metric(label=key, value=value)
+    else:
+        st.info("ClickUp API Key not provided. Skipping workspace data analysis.")
+
+    # Build and display company profile if a company name is provided
+    if company_name:
+        with st.spinner("Generating company profile..."):
+            company_profile = get_company_info(company_name)
+        st.subheader("🏢 Company Profile")
+        st.markdown(company_profile, unsafe_allow_html=True)
+    else:
+        company_profile = "No company information provided."
+    
     with st.spinner("Generating AI recommendations..."):
-        recommendations = get_ai_recommendations(use_case, get_company_info(company_name), {})
-    st.subheader("📌 AI Recommendations")
-    st.markdown(recommendations, unsafe_allow_html=True)
+        recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
+        st.markdown(recommendations, unsafe_allow_html=True)
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 7px;'>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
