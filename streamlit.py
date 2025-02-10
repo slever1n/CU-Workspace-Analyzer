@@ -91,7 +91,7 @@ def fetch_workspace_details(api_key, team_id):
             "🗂️ Lists": list_count,
             "📝 Total Tasks": task_count,
             "✅ Completed Tasks": completed_tasks,
-            "📈 Task Completion Rate": round(task_completion_rate, 2),
+            "📈 Task Completion Rate": f"{round(task_completion_rate, 2)}%",
             "⚠️ Overdue Tasks": overdue_tasks,
             "🔥 High Priority Tasks": high_priority_tasks
         }
@@ -122,8 +122,10 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
         if openai_api_key:
             response = openai.ChatCompletion.create(
                 model="gpt-4o",
-                messages=[{"role": "system", "content": "You are a helpful assistant."},
-                          {"role": "user", "content": prompt}]
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ]
             )
             return response["choices"][0]["message"]["content"]
     except Exception as e:
@@ -141,7 +143,6 @@ api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password
 use_case = st.text_area("🏢 Describe your company's use case:")
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
 
-# Analyze button (all inputs are already visible)
 if st.button("Analyze Workspace"):
     workspace_data = None
     if api_key:
@@ -153,12 +154,22 @@ if st.button("Analyze Workspace"):
             st.error(workspace_data["error"])
         else:
             st.subheader("📊 Workspace Summary")
-            st.json(workspace_data)
+            # Create tiles for each workspace metric
+            cols = st.columns(4)
+            for idx, (key, value) in enumerate(workspace_data.items()):
+                with cols[idx % 4]:
+                    st.metric(label=key, value=value)
     else:
         st.info("ClickUp API Key not provided. Skipping workspace data analysis.")
 
     with st.spinner("Generating AI recommendations..."):
         recommendations = get_ai_recommendations(use_case, company_name, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
+
+# Section with useful hyperlinks to ClickUp resources and templates
+st.markdown("### 🛠️ Useful ClickUp Templates & Resources:")
+st.markdown("- [ClickUp Templates](https://clickup.com/templates)")
+st.markdown("- [ClickUp University](https://university.clickup.com)")
+st.markdown("- [ClickUp Help Center](https://help.clickup.com)")
 
 st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
