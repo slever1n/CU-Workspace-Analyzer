@@ -130,17 +130,17 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
     {workspace_details if workspace_details else "(No workspace details available)"}
     
     ### 📈 Productivity Analysis:
-    Provide insights on how to optimize productivity for this company and use case. Provide up to 8 bullets.
+    Provide insights on how to optimize productivity for this company and use case.
     
     ### ✅ Actionable Recommendations:
-    Suggest practical steps to improve efficiency and organization based on company profile. Provide up to 8 bullets.
+    Suggest practical steps to improve efficiency and organization based on company profile.
     
     ### 🏆 Best Practices & Tips:
-    Share industry-specific best practices to maximize workflow efficiency. Provide up to 8 bullets.
+    Share industry-specific best practices to maximize workflow efficiency.
     
     ### 🛠️ Useful ClickUp Templates & Resources:
     List relevant ClickUp templates and best practices for this use case.
-    Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com. Provide up to 8 links.
+    Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
     """
     
     try:
@@ -162,8 +162,8 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
 st.title("📊 ClickUp Workspace Analyzer")
 
 clickup_api_key = st.text_input("🔑 ClickUp API Key (Optional)", type="password")
+use_case = st.text_input("📌 Use Case (e.g., Consulting, Sales)")
 company_name = st.text_input("🏢 Company Name (Optional)")
-use_case = st.text_input("📌 Use Case (e.g., Project Management, Sales, Use of Dashboard, feature usage)")
 
 if st.button("🚀 Analyze Workspace"):
     if not use_case:
@@ -184,6 +184,10 @@ if st.button("🚀 Analyze Workspace"):
             for i, key in enumerate(keys):
                 with cols[i % 4]:
                     st.metric(label=key, value=workspace_details[key])
+
+        # Display Company Info
+        st.subheader("🏢 Company Information:")
+        st.markdown(f"**{company_name}**: {company_info}")
 
         with st.spinner("🤖 Generating AI recommendations..."):
             ai_recommendations = get_ai_recommendations(use_case, company_info, workspace_details)
