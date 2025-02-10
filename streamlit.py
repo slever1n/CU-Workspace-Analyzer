@@ -124,7 +124,13 @@ async def fetch_workspace_details(api_key, team_id):
                             folder_id = folder["id"]
                             lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
                             async with session.get(lists_url, headers=headers) as lists_response:
-                                lists_data = await lists_response.json()
+                                if lists_response.status == 504:
+                                    logging.warning(f"Received 504 for URL: {lists_url}, retrying...")
+                                    await asyncio.sleep(1)  # Wait for 1 second before retrying
+                                    async with session.get(lists_url, headers=headers) as retry_response:
+                                        lists_data = await retry_response.json()
+                                else:
+                                    lists_data = await lists_response.json()
                                 logging.debug(f"Lists data for folder {folder_id}: {lists_data}")
                                 lists = lists_data.get("lists", [])
                                 list_count += len(lists)
@@ -133,7 +139,13 @@ async def fetch_workspace_details(api_key, team_id):
                                     list_id = lst["id"]
                                     tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
                                     async with session.get(tasks_url, headers=headers) as tasks_response:
-                                        tasks_data = await tasks_response.json()
+                                        if tasks_response.status == 504:
+                                            logging.warning(f"Received 504 for URL: {tasks_url}, retrying...")
+                                            await asyncio.sleep(1)  # Wait for 1 second before retrying
+                                            async with session.get(tasks_url, headers=headers) as retry_response:
+                                                tasks_data = await retry_response.json()
+                                        else:
+                                            tasks_data = await tasks_response.json()
                                         logging.debug(f"Tasks data for list {list_id}: {tasks_data}")
                                         tasks = tasks_data.get("tasks", [])
                                         
