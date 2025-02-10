@@ -156,7 +156,48 @@ async def get_clickup_workspace_data(api_key):
 
 
 def get_ai_recommendations(use_case, company_profile, workspace_details):
-    # ... (Your get_ai_recommendations function - remains unchanged)
+    """
+    Generates AI-powered recommendations based on workspace data, company profile, and use case.
+    """
+    prompt = textwrap.dedent(f"""
+        Based on the following workspace data:
+        {workspace_details if workspace_details else "(No workspace data available)"}
+        
+        Considering the company's use case: "{use_case}"
+        And the following company profile:
+        {company_profile}
+        
+        Please provide a detailed analysis.
+        
+        <h3>📈 Productivity Analysis</h3>
+        Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
+        
+        <h3>✅ Actionable Recommendations</h3>
+        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations from the company profile.
+        
+        <h3>🏆 Best Practices & Tips</h3>
+        Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
+        
+        <h3>🛠️ Useful ClickUp Templates & Resources</h3>
+        Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com. Provide 5-8 links.
+    """)
+    
+    try:
+        if openai_api_key:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response["choices"][0]["message"]["content"]
+    except Exception as e:
+        if gemini_api_key:
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            response = model.generate_content(prompt)
+            return response.text
+    return "⚠️ AI recommendations are not available because both AI services failed."
 
 def run_async_in_thread(func, args, q):
     loop = asyncio.new_event_loop()
