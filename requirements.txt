@@ -4,4 +4,3 @@ google-generativeai
 beautifulsoup4
 aiohttp
 asyncio
-textwrap
