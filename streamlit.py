@@ -3,6 +3,7 @@ import streamlit as st
 import time
 import openai
 import google.generativeai as genai
+from bs4 import BeautifulSoup
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analyzer", page_icon="🚀", layout="wide")
@@ -23,7 +24,7 @@ if gemini_api_key:
 def get_clickup_workspace_data(api_key):
     """Fetches real workspace data from ClickUp API."""
     if not api_key:
-        return None  # Skip API call if no key is provided
+        return None
     
     url = "https://api.clickup.com/api/v2/team"
     headers = {"Authorization": api_key}
@@ -97,26 +98,49 @@ def fetch_workspace_details(api_key, team_id):
     except Exception as e:
         return {"error": f"Exception: {str(e)}"}
 
-def get_ai_recommendations(use_case, workspace_details):
+def get_company_info(company_name):
+    """Fetches basic company information from the web."""
+    search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    
+    try:
+        response = requests.get(search_url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
+        
+        # Extract company details (rough heuristic)
+        description = ""
+        for tag in soup.find_all("span"):
+            text = tag.get_text()
+            if "is a" in text or "provides" in text or "specializes in" in text:
+                description = text
+                break
+
+        return description if description else "No detailed company info found."
+    except Exception as e:
+        return f"Error fetching company details: {str(e)}"
+
+def get_ai_recommendations(use_case, company_info, workspace_details):
     """Generates AI-powered recommendations using OpenAI or Gemini."""
     prompt = f"""
     **📌 Use Case:** {use_case}
+    
+    **🏢 Company Profile:** {company_info}
     
     ### 🔍 Workspace Overview:
     {workspace_details if workspace_details else "(No workspace details available)"}
     
     ### 📈 Productivity Analysis:
-    Provide insights on how to optimize productivity for this use case. Provide up to 8 bullets.
+    Provide insights on how to optimize productivity for this company and use case. Provide up to 8 bullets.
     
     ### ✅ Actionable Recommendations:
-    Suggest practical steps to improve efficiency and organization. Provide up to 8 bullets.
+    Suggest practical steps to improve efficiency and organization based on company profile. Provide up to 8 bullets.
     
     ### 🏆 Best Practices & Tips:
     Share industry-specific best practices to maximize workflow efficiency. Provide up to 8 bullets.
     
     ### 🛠️ Useful ClickUp Templates & Resources:
     List relevant ClickUp templates and best practices for this use case.
-    Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com. and Provide up to 8 links.
+    Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com. Provide up to 8 links.
     """
     
     try:
@@ -138,18 +162,18 @@ def get_ai_recommendations(use_case, workspace_details):
 st.title("📊 ClickUp Workspace Analyzer")
 
 clickup_api_key = st.text_input("🔑 ClickUp API Key (Optional)", type="password")
-use_case = st.text_input("📌  Use Case (e.g., Project Management, Sales, Use of Dashboard, feature usage)")
+company_name = st.text_input("🏢 Company Name (Optional)")
+use_case = st.text_input("📌 Use Case (e.g., Project Management, Sales, Use of Dashboard, feature usage)")
 
 if st.button("🚀 Analyze Workspace"):
     if not use_case:
         st.error("Please enter a use case.")
     else:
         with st.spinner("🔄 Fetching ClickUp Workspace Data..."):
-            if clickup_api_key:
-                workspace_details = get_clickup_workspace_data(clickup_api_key)
-            else:
-                workspace_details = None
-                st.warning("⚠️ ClickUp API key is blank. AI recommendations will be based only on the use case.")
+            workspace_details = get_clickup_workspace_data(clickup_api_key) if clickup_api_key else None
+        
+        with st.spinner("🌍 Searching for company information..."):
+            company_info = get_company_info(company_name) if company_name else "No company info provided."
 
         if workspace_details and "error" in workspace_details:
             st.error(f"❌ {workspace_details['error']}")
@@ -162,8 +186,8 @@ if st.button("🚀 Analyze Workspace"):
                     st.metric(label=key, value=workspace_details[key])
 
         with st.spinner("🤖 Generating AI recommendations..."):
-            ai_recommendations = get_ai_recommendations(use_case, workspace_details)
+            ai_recommendations = get_ai_recommendations(use_case, company_info, workspace_details)
         
         st.markdown(ai_recommendations, unsafe_allow_html=True)
 
-st.markdown("<div style='position: fixed; bottom: 6px; left: 10px;'>a little tool made by: Yul😊</div>", unsafe_allow_html=True)
+st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
