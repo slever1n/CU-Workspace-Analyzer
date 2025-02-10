@@ -1,33 +1,26 @@
-import os
-import requests
 import streamlit as st
-import time
 import openai
+import requests
+import time
 import google.generativeai as genai
 
-# Streamlit secrets for API keys
+# Set page title and icon
+@@ -8,23 +10,103 @@
+# Retrieve API keys from Streamlit secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 gemini_api_key = st.secrets.get("GEMINI_API_KEY")
 clickup_api_key = st.text_input("🔑 ClickUp API Key (Optional)", type="password")
 
 # Configure OpenAI and Gemini
 if openai_api_key:
-    client = openai.OpenAI(api_key=openai_api_key)
-
+openai.api_key = openai_api_key
 if gemini_api_key:
-    genai.configure(api_key=gemini_api_key)
-
-# Streamlit UI
-st.set_page_config(page_title="ClickUp Workspace Analyzer", page_icon="🚀", layout="wide")
-st.title("📊 ClickUp Workspace Analyzer")
-
-use_case = st.text_input("📌 Use Case (e.g., Consulting, Sales)")
-company_name = st.text_input("🏢 Company Name (Optional)")
+genai.configure(api_key=gemini_api_key)
 
 def get_clickup_workspace_data(api_key):
-    """Fetches workspace details including spaces, folders, lists, and tasks from ClickUp API."""
+    """Fetches real workspace data from ClickUp API, including spaces, folders, lists, and tasks."""
     if not api_key:
-        return None  
+        return None
 
     url = "https://api.clickup.com/api/v2/team"
     headers = {"Authorization": api_key}
@@ -47,43 +40,46 @@ def get_clickup_workspace_data(api_key):
         return {"error": f"Exception: {str(e)}"}
 
 def fetch_workspace_details(api_key, team_id):
-    """Fetches ClickUp workspace details."""
+    """Fetches workspace details including spaces, folders, lists, and tasks."""
     headers = {"Authorization": api_key}
+    
     try:
         spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
         spaces_response = requests.get(spaces_url, headers=headers).json()
         spaces = spaces_response.get("spaces", [])
-        
-        space_count, folder_count, list_count, task_count = len(spaces), 0, 0, 0
-        completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
 
+        space_count, folder_count, list_count, task_count, completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0, 0, 0, 0, 0
+        
         for space in spaces:
             space_id = space["id"]
+            
             folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
             folders_response = requests.get(folders_url, headers=headers).json()
             folders = folders_response.get("folders", [])
             folder_count += len(folders)
-
+            
             for folder in folders:
                 folder_id = folder["id"]
+                
                 lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
                 lists_response = requests.get(lists_url, headers=headers).json()
                 lists = lists_response.get("lists", [])
                 list_count += len(lists)
-
+                
                 for lst in lists:
                     list_id = lst["id"]
+                    
                     tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
                     tasks_response = requests.get(tasks_url, headers=headers).json()
                     tasks = tasks_response.get("tasks", [])
-
+                    
                     task_count += len(tasks)
-                    completed_tasks += sum(1 for task in tasks if task.get("status") == "complete")
+                    completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
                     overdue_tasks += sum(1 for task in tasks if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
-                    high_priority_tasks += sum(1 for task in tasks if task.get("priority") in ["urgent", "high"])
-
+                    high_priority_tasks += sum(1 for task in tasks if task.get("priority", "") in ["urgent", "high"])
+        
         task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
-
+        
         return {
             "📁 Spaces": space_count,
             "📂 Folders": folder_count,
@@ -97,95 +93,66 @@ def fetch_workspace_details(api_key, team_id):
     except Exception as e:
         return {"error": f"Exception: {str(e)}"}
 
-def get_company_profile(company):
-    """Uses AI to generate a company profile based on the name."""
-    if not company:
-        return None
+def generate_company_profile(company_name):
+"""Uses AI to generate a company profile based on the name."""
+    if not company_name:
+        return "No company information provided."
 
-    prompt = f"""
-    Provide a brief company profile for "{company}" including:
-    - Industry
-    - Services or products
-    - Key competitors
-    - Market presence (global/local)
-    - Any notable achievements or insights
-    """
+prompt = f"""
+    Provide a brief company profile for **{company_name}** including:
+    Provide a company profile for **{company_name}**, including:
+   - Industry and key business areas
+   - Market position and competitors
+   - Challenges and opportunities
+    - Any notable recent trends or company initiatives
+    - Notable recent trends or initiatives
 
-    try:
-        if openai_api_key:
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "system", "content": "You are a business analyst."},
-                          {"role": "user", "content": prompt}]
-            )
-            return response.choices[0].message.content
-    except Exception as e:
-        if gemini_api_key:
-            model = genai.GenerativeModel("gemini-pro")
-            response = model.generate_content(prompt)
-            return response.text
+    If the company is not well-known, generate a realistic profile based on similar businesses in that industry.
+    If the company is not well-known, generate a realistic profile based on similar businesses.
+   """
 
-    return "⚠️ Company profile generation failed."
+try:
+@@ -42,16 +124,17 @@ def generate_company_profile(company_name):
+except Exception as e:
+return f"⚠️ AI could not generate company information: {str(e)}"
 
-def get_ai_recommendations(use_case, company_info, workspace_details):
-    """Generates AI-powered recommendations based on ClickUp workspace details and company profile."""
-    prompt = f"""
-    **📌 Use Case:** {use_case}
+    return "⚠️ No company information available."
 
-    ### 🏢 Company Profile:
-    {company_info if company_info else "(No company info available)"}
+def get_ai_recommendations(use_case, company_profile):
+def get_ai_recommendations(use_case, company_profile, workspace_details):
+"""Generates AI-powered recommendations using OpenAI or Gemini."""
+prompt = f"""
+   **📌 Use Case:** {use_case}
 
-    ### 🔍 Workspace Overview:
-    {workspace_details if workspace_details else "(No workspace details available)"}
+   **🏢 Company Profile:**
+   {company_profile}
 
-    ### 📈 Productivity Analysis:
-    Provide insights on how to optimize productivity for this use case.
+    **📊 ClickUp Workspace Details:**
+    {workspace_details if workspace_details else "No ClickUp data available."}
 
-    ### ✅ Actionable Recommendations:
-    Suggest practical steps to improve efficiency and organization.
+   ### 📈 Productivity Analysis:
+   Provide insights on optimizing productivity for this company and use case.
 
-    ### 🏆 Best Practices & Tips:
-    Share industry-specific best practices to maximize workflow efficiency.
+@@ -93,12 +176,22 @@ def get_ai_recommendations(use_case, company_profile):
+with st.spinner("🤖 Generating company profile..."):
+company_profile = generate_company_profile(company_name) if company_name else "No company info provided."
 
-    ### 🛠️ Useful ClickUp Templates & Resources:
-    List relevant ClickUp templates and best practices for this use case.
-    """
+        with st.spinner("📊 Fetching ClickUp Workspace Data..."):
+            workspace_details = get_clickup_workspace_data(clickup_api_key)
 
-    try:
-        if openai_api_key:
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "system", "content": "You are a productivity expert."},
-                          {"role": "user", "content": prompt}]
-            )
-            return response.choices[0].message.content
-    except Exception as e:
-        if gemini_api_key:
-            model = genai.GenerativeModel("gemini-pro")
-            response = model.generate_content(prompt)
-            return response.text
+# Display Company Info
+st.subheader("🏢 Company Information:")
+st.markdown(company_profile)
 
-    return "⚠️ AI recommendations are not available."
-
-if st.button("🚀 Analyze Workspace"):
-    if not use_case:
-        st.error("Please enter a use case.")
-    else:
-        workspace_details = get_clickup_workspace_data(clickup_api_key) if clickup_api_key else None
-        company_info = get_company_profile(company_name) if company_name else None
-
+        # Display ClickUp Data
         if workspace_details and "error" in workspace_details:
             st.error(f"❌ {workspace_details['error']}")
-        elif workspace_details:
-            st.subheader("📝 Workspace Analysis:")
-            cols = st.columns(4)
-            keys = list(workspace_details.keys())
-            for i, key in enumerate(keys):
-                with cols[i % 4]:
-                    st.metric(label=key, value=workspace_details[key])
+        else:
+            st.subheader("📊 ClickUp Workspace Analysis:")
+            st.json(workspace_details)
 
-        ai_recommendations = get_ai_recommendations(use_case, company_info, workspace_details)
-        st.subheader("📌 AI Recommendations:")
-        st.markdown(ai_recommendations, unsafe_allow_html=True)
+with st.spinner("🤖 Generating AI recommendations..."):
+            ai_recommendations = get_ai_recommendations(use_case, company_profile)
+            ai_recommendations = get_ai_recommendations(use_case, company_profile, workspace_details)
 
-st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
+st.markdown(ai_recommendations, unsafe_allow_html=True)
