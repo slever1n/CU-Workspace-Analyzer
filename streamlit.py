@@ -1,8 +1,6 @@
 import aiohttp
 import asyncio
-import requests
 import streamlit as st
-import time
 import openai
 import google.generativeai as genai
 import textwrap
@@ -64,7 +62,7 @@ def get_company_info(company_name):
 
 async def get_clickup_workspace_data(api_key):
     """
-    Fetches real workspace data from the ClickUp API.
+    Fetches basic workspace data from the ClickUp API.
     """
     if not api_key:
         return None
@@ -82,7 +80,7 @@ async def get_clickup_workspace_data(api_key):
                     teams = data.get("teams", [])
                     if teams:
                         team_id = teams[0]["id"]
-                        return await fetch_workspace_details(api_key, team_id)
+                        return await fetch_workspace_summary(api_key, team_id)
                     else:
                         return {"error": "No teams found in ClickUp workspace."}
                 else:
@@ -93,9 +91,9 @@ async def get_clickup_workspace_data(api_key):
             logging.exception("Exception occurred while fetching workspace data")
             return {"error": f"Exception: {str(e)}"}
 
-async def fetch_workspace_details(api_key, team_id):
+async def fetch_workspace_summary(api_key, team_id):
     """
-    Fetches workspace details including spaces, folders, lists, and tasks.
+    Fetches a summary of the workspace including spaces, folders, and lists.
     """
     headers = {"Authorization": api_key}
     
@@ -108,8 +106,7 @@ async def fetch_workspace_details(api_key, team_id):
                 spaces = spaces_data.get("spaces", [])
                 
                 space_count = len(spaces)
-                folder_count, list_count, task_count = 0, 0, 0
-                completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+                folder_count, list_count = 0, 0
                 
                 for space in spaces:
                     space_id = space["id"]
@@ -124,54 +121,20 @@ async def fetch_workspace_details(api_key, team_id):
                             folder_id = folder["id"]
                             lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
                             async with session.get(lists_url, headers=headers) as lists_response:
-                                if lists_response.status == 504:
-                                    logging.warning(f"Received 504 for URL: {lists_url}, retrying...")
-                                    await asyncio.sleep(1)  # Wait for 1 second before retrying
-                                    async with session.get(lists_url, headers=headers) as retry_response:
-                                        lists_data = await retry_response.json()
-                                else:
-                                    lists_data = await lists_response.json()
+                                lists_data = await lists_response.json()
                                 logging.debug(f"Lists data for folder {folder_id}: {lists_data}")
                                 lists = lists_data.get("lists", [])
                                 list_count += len(lists)
-                                
-                                for lst in lists:
-                                    list_id = lst["id"]
-                                    tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
-                                    async with session.get(tasks_url, headers=headers) as tasks_response:
-                                        if tasks_response.status == 504:
-                                            logging.warning(f"Received 504 for URL: {tasks_url}, retrying...")
-                                            await asyncio.sleep(1)  # Wait for 1 second before retrying
-                                            async with session.get(tasks_url, headers=headers) as retry_response:
-                                                tasks_data = await retry_response.json()
-                                        else:
-                                            tasks_data = await tasks_response.json()
-                                        logging.debug(f"Tasks data for list {list_id}: {tasks_data}")
-                                        tasks = tasks_data.get("tasks", [])
-                                        
-                                        task_count += len(tasks)
-                                        completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
-                                        overdue_tasks += sum(1 for task in tasks 
-                                                             if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
-                                        high_priority_tasks += sum(1 for task in tasks 
-                                                                   if task.get("priority", "") in ["urgent", "high"])
-                
-                task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
                 
                 workspace_summary = {
                     "📁 Spaces": space_count,
                     "📂 Folders": folder_count,
-                    "🗂️ Lists": list_count,
-                    "📝 Total Tasks": task_count,
-                    "✅ Completed Tasks": completed_tasks,
-                    "📈 Task Completion Rate": f"{round(task_completion_rate, 2)}%",
-                    "⚠️ Overdue Tasks": overdue_tasks,
-                    "🔥 High Priority Tasks": high_priority_tasks
+                    "🗂️ Lists": list_count
                 }
                 logging.debug(f"Workspace Summary: {workspace_summary}")
                 return workspace_summary
         except Exception as e:
-            logging.exception("Exception occurred while fetching workspace details")
+            logging.exception("Exception occurred while fetching workspace summary")
             return {"error": f"Exception: {str(e)}"}
 
 def get_ai_recommendations(use_case, company_profile, workspace_details):
@@ -243,9 +206,9 @@ if st.button("🚀 Let's Go!"):
         else:
             st.subheader("📊 Workspace Summary")
             # Display workspace data as tiles
-            cols = st.columns(4)
+            cols = st.columns(3)
             for idx, (key, value) in enumerate(workspace_data.items()):
-                with cols[idx % 4]:
+                with cols[idx % 3]:
                     st.metric(label=key, value=value)
     else:
         st.info("ClickUp API Key not provided. Skipping workspace data analysis.")
