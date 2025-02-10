@@ -44,72 +44,6 @@ def fetch_workspace_details(clickup_api_key, team_id):
     except Exception as e:
         return {"error": f"Exception fetching workspace details: {str(e)}"}
 
-def display_workspace_data(workspace_data):
-    """Displays workspace data in a beautiful tiled format."""
-    if "error" in workspace_data:
-        st.error(workspace_data["error"])
-        return
-    
-    cols = st.columns(4)
-    tiles = list(workspace_data.items())
-    for i, (title, value) in enumerate(tiles):
-        with cols[i % 4]:
-            st.metric(label=title, value=value)
-
-def get_company_info(company_name):
-    """Fetches company profile from Google, LinkedIn, and the company website."""
-    headers = {"User-Agent": "Mozilla/5.0"}
-    
-    def search_google():
-        """Searches Google for company info."""
-        search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
-        try:
-            response = requests.get(search_url, headers=headers)
-            soup = BeautifulSoup(response.text, "html.parser")
-            for tag in soup.find_all("span"):
-                text = tag.get_text()
-                if "is a" in text or "provides" in text or "specializes in" in text:
-                    return text
-        except Exception as e:
-            return f"Error fetching Google info: {str(e)}"
-        return None
-
-    def search_linkedin():
-        """Searches LinkedIn for company info."""
-        search_url = f"https://www.google.com/search?q=site:linkedin.com/company/{company_name.replace(' ', '-')}"
-        try:
-            response = requests.get(search_url, headers=headers)
-            soup = BeautifulSoup(response.text, "html.parser")
-            for tag in soup.find_all("cite"):
-                if "linkedin.com/company/" in tag.text:
-                    return tag.text.strip()
-        except Exception as e:
-            return f"Error fetching LinkedIn info: {str(e)}"
-        return None
-
-    def search_company_website():
-        """Attempts to find and extract company info from their website."""
-        search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+official+website"
-        try:
-            response = requests.get(search_url, headers=headers)
-            soup = BeautifulSoup(response.text, "html.parser")
-            for tag in soup.find_all("cite"):
-                if "http" in tag.text:
-                    return tag.text.strip()
-        except Exception as e:
-            return f"Error fetching company website: {str(e)}"
-        return None
-
-    google_info = search_google()
-    linkedin_profile = search_linkedin()
-    company_website = search_company_website()
-
-    return {
-        "Google Description": google_info or "Not found",
-        "LinkedIn Profile": linkedin_profile or "Not found",
-        "Company Website": company_website or "Not found"
-    }
-
 def get_ai_recommendations(use_case, company_info, workspace_details):
     """Generates AI-powered recommendations using OpenAI or Gemini."""
     prompt = f"""
@@ -120,21 +54,45 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
     - **LinkedIn Profile:** {company_info['LinkedIn Profile']}
     - **Company Website:** {company_info['Company Website']}
     
-    ### 🔍 Workspace Overview:
-    {workspace_details if workspace_details else "(No workspace details available)"}
-    
     ### 📈 Productivity Analysis:
-    Provide insights on how to optimize productivity for this company and use case.
+    - Identify workflow bottlenecks and inefficiencies.
+    - Evaluate task completion rates and overdue tasks.
+    - Assess workload distribution across teams.
+    - Suggest automation opportunities to reduce manual work.
+    - Highlight underutilized ClickUp features.
+    - Compare team performance against industry benchmarks.
+    - Identify redundant tasks and streamline processes.
+    - Recommend task prioritization strategies.
     
     ### ✅ Actionable Recommendations:
-    Suggest practical steps to improve efficiency and organization based on company profile.
+    - Implement task automation for repetitive processes.
+    - Optimize task dependencies to avoid bottlenecks.
+    - Set clear OKRs and track progress in ClickUp.
+    - Establish standardized naming conventions for clarity.
+    - Use ClickUp dashboards for real-time analytics.
+    - Encourage team collaboration with ClickUp Docs.
+    - Leverage recurring tasks for ongoing workflows.
+    - Assign priorities and deadlines effectively.
     
     ### 🏆 Best Practices & Tips:
-    Share industry-specific best practices to maximize workflow efficiency.
+    - Use templates for recurring project structures.
+    - Regularly review completed tasks for insights.
+    - Encourage time tracking for accurate estimations.
+    - Integrate ClickUp with other productivity tools.
+    - Set up notifications to stay informed.
+    - Use custom statuses for better workflow tracking.
+    - Conduct weekly stand-ups using ClickUp comments.
+    - Train teams on advanced ClickUp features.
     
     ### 🛠️ Useful ClickUp Templates & Resources:
-    List relevant ClickUp templates and best practices for this use case.
-    Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
+    - [Task Management Template](https://clickup.com/templates/task-management)
+    - [OKR Tracking Template](https://clickup.com/templates/okr-tracking)
+    - [Agile Scrum Template](https://clickup.com/templates/agile-scrum)
+    - [Sales CRM Template](https://clickup.com/templates/sales-crm)
+    - [Product Roadmap Template](https://clickup.com/templates/product-roadmap)
+    - [Team Collaboration Guide](https://university.clickup.com/)
+    - [ClickUp Help Center](https://help.clickup.com/)
+    - [Productivity Webinars](https://clickup.com/webinars)
     """
     
     try:
@@ -154,44 +112,4 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
 
 # UI Setup
 st.title("📊 ClickUp Workspace Analyzer")
-
-clickup_api_key = st.text_input("🔑 ClickUp API Key (Optional)", type="password")
-use_case = st.text_input("📌 Use Case (e.g., Consulting, Sales)")
-company_name = st.text_input("🏢 Company Name (Optional)")
-
-if st.button("🚀 Analyze Workspace"):
-    if not use_case:
-        st.error("Please enter a use case.")
-    else:
-        with st.spinner("🔄 Fetching ClickUp Workspace Data..."):
-            workspace_details = get_clickup_workspace_data(clickup_api_key) if clickup_api_key else None
-        
-        with st.spinner("🌍 Searching for company information..."):
-            company_info = get_company_info(company_name) if company_name else {
-                "Google Description": "No company info provided.",
-                "LinkedIn Profile": "No company info provided.",
-                "Company Website": "No company info provided."
-            }
-
-        if workspace_details and "error" in workspace_details:
-            st.error(f"❌ {workspace_details['error']}")
-        elif workspace_details:
-            st.subheader("📝 Workspace Analysis:")
-            cols = st.columns(4)
-            keys = list(workspace_details.keys())
-            for i, key in enumerate(keys):
-                with cols[i % 4]:
-                    st.metric(label=key, value=workspace_details[key])
-
-        # Display Company Info
-        st.subheader("🏢 Company Information:")
-        st.markdown(f"**Google Description:** {company_info['Google Description']}")
-        st.markdown(f"**LinkedIn Profile:** [{company_info['LinkedIn Profile']}]({company_info['LinkedIn Profile']})")
-        st.markdown(f"**Company Website:** [{company_info['Company Website']}]({company_info['Company Website']})")
-
-        with st.spinner("🤖 Generating AI recommendations..."):
-            ai_recommendations = get_ai_recommendations(use_case, company_info, workspace_details)
-        
-        st.markdown(ai_recommendations, unsafe_allow_html=True)
-
-st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
+st.markdown("Analyze your ClickUp workspace efficiency and get AI-powered recommendations.")
