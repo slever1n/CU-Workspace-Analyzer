@@ -192,8 +192,8 @@ st.text("OR")
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
 st.text("AND")
 use_case = st.text_area("🏢 Describe your company's use case:")
-st.divider() 
 if st.button("🚀 Let's Go!"):
+st.divider() 
     workspace_data = None
     if api_key:
         with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
