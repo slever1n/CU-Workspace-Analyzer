@@ -203,15 +203,19 @@ def fetch_list_details(api_key, list_id):
 
     tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
     start_time = time.time()
-    tasks_response = requests.get(tasks_url, headers=headers).json()
+    params = {
+        "archived": "false",
+        "subtasks": "true"
+    }
+    tasks_response = requests.get(tasks_url, headers=headers, params=params).json()
     logging.info(f"API call to {tasks_url} took {time.time() - start_time:.2f} seconds")
     tasks = tasks_response.get("tasks", [])
     task_count += len(tasks)
     
     for task in tasks:
-        status = task.get("status", {}).get("status", "")
+        status = task.get("status", {}).get("status", "").lower()
         logging.info(f"Task ID: {task['id']} - Status: {status}")
-        completed_tasks += 1 if type.lower() == "closed" else 0
+        completed_tasks += 1 if status == "closed" else 0
         overdue_tasks += 1 if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000) else 0
         high_priority_tasks += 1 if task.get("priority", "") in ["urgent", "high"] else 0
     
