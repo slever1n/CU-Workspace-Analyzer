@@ -43,88 +43,69 @@ def get_clickup_workspace_data(api_key):
     except Exception as e:
         return {"error": f"Exception: {str(e)}"}
 
-def fetch_workspace_details(api_key, team_id):
-    """Fetches workspace details including spaces, folders, lists, and tasks."""
-    headers = {"Authorization": api_key}
-    
-    try:
-        spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
-        spaces_response = requests.get(spaces_url, headers=headers).json()
-        spaces = spaces_response.get("spaces", [])
-        
-        space_count = len(spaces)
-        folder_count, list_count, task_count, completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0, 0, 0, 0
-        
-        for space in spaces:
-            space_id = space["id"]
-            
-            folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
-            folders_response = requests.get(folders_url, headers=headers).json()
-            folders = folders_response.get("folders", [])
-            folder_count += len(folders)
-            
-            for folder in folders:
-                folder_id = folder["id"]
-                
-                lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
-                lists_response = requests.get(lists_url, headers=headers).json()
-                lists = lists_response.get("lists", [])
-                list_count += len(lists)
-                
-                for lst in lists:
-                    list_id = lst["id"]
-                    
-                    tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
-                    tasks_response = requests.get(tasks_url, headers=headers).json()
-                    tasks = tasks_response.get("tasks", [])
-                    
-                    task_count += len(tasks)
-                    completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
-                    overdue_tasks += sum(1 for task in tasks if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
-                    high_priority_tasks += sum(1 for task in tasks if task.get("priority", "") in ["urgent", "high"])
-        
-        task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
-        
-        return {
-            "📁 Spaces": space_count,
-            "📂 Folders": folder_count,
-            "🗂️ Lists": list_count,
-            "📝 Total Tasks": task_count,
-            "✅ Completed Tasks": completed_tasks,
-            "📈 Task Completion Rate": round(task_completion_rate, 2),
-            "⚠️ Overdue Tasks": overdue_tasks,
-            "🔥 High Priority Tasks": high_priority_tasks
-        }
-    except Exception as e:
-        return {"error": f"Exception: {str(e)}"}
-
 def get_company_info(company_name):
-    """Fetches basic company information from the web."""
-    search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
+    """Fetches company profile from Google, LinkedIn, and the company website."""
     headers = {"User-Agent": "Mozilla/5.0"}
     
-    try:
-        response = requests.get(search_url, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
-        
-        # Extract company details (rough heuristic)
-        description = ""
-        for tag in soup.find_all("span"):
-            text = tag.get_text()
-            if "is a" in text or "provides" in text or "specializes in" in text:
-                description = text
-                break
+    def search_google():
+        """Searches Google for company info."""
+        search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
+        try:
+            response = requests.get(search_url, headers=headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            for tag in soup.find_all("span"):
+                text = tag.get_text()
+                if "is a" in text or "provides" in text or "specializes in" in text:
+                    return text
+        except Exception as e:
+            return f"Error fetching Google info: {str(e)}"
+        return None
 
-        return description if description else "No detailed company info found."
-    except Exception as e:
-        return f"Error fetching company details: {str(e)}"
+    def search_linkedin():
+        """Searches LinkedIn for company info."""
+        search_url = f"https://www.google.com/search?q=site:linkedin.com/company/{company_name.replace(' ', '-')}"
+        try:
+            response = requests.get(search_url, headers=headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            for tag in soup.find_all("cite"):
+                if "linkedin.com/company/" in tag.text:
+                    return tag.text.strip()
+        except Exception as e:
+            return f"Error fetching LinkedIn info: {str(e)}"
+        return None
+
+    def search_company_website():
+        """Attempts to find and extract company info from their website."""
+        search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+official+website"
+        try:
+            response = requests.get(search_url, headers=headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            for tag in soup.find_all("cite"):
+                if "http" in tag.text:
+                    return tag.text.strip()
+        except Exception as e:
+            return f"Error fetching company website: {str(e)}"
+        return None
+
+    google_info = search_google()
+    linkedin_profile = search_linkedin()
+    company_website = search_company_website()
+
+    return {
+        "Google Description": google_info or "Not found",
+        "LinkedIn Profile": linkedin_profile or "Not found",
+        "Company Website": company_website or "Not found"
+    }
 
 def get_ai_recommendations(use_case, company_info, workspace_details):
     """Generates AI-powered recommendations using OpenAI or Gemini."""
     prompt = f"""
     **📌 Use Case:** {use_case}
     
-    **🏢 Company Profile:** {company_info}
+    **🏢 Company Profile:**
+    - **Google Description:** {company_info['Google Description']}
+    - **LinkedIn Profile:** {company_info['LinkedIn Profile']}
+    - **Company Website:** {company_info['Company Website']}
     
     ### 🔍 Workspace Overview:
     {workspace_details if workspace_details else "(No workspace details available)"}
@@ -173,7 +154,11 @@ if st.button("🚀 Analyze Workspace"):
             workspace_details = get_clickup_workspace_data(clickup_api_key) if clickup_api_key else None
         
         with st.spinner("🌍 Searching for company information..."):
-            company_info = get_company_info(company_name) if company_name else "No company info provided."
+            company_info = get_company_info(company_name) if company_name else {
+                "Google Description": "No company info provided.",
+                "LinkedIn Profile": "No company info provided.",
+                "Company Website": "No company info provided."
+            }
 
         if workspace_details and "error" in workspace_details:
             st.error(f"❌ {workspace_details['error']}")
@@ -187,7 +172,9 @@ if st.button("🚀 Analyze Workspace"):
 
         # Display Company Info
         st.subheader("🏢 Company Information:")
-        st.markdown(f"**{company_name}**: {company_info}")
+        st.markdown(f"**Google Description:** {company_info['Google Description']}")
+        st.markdown(f"**LinkedIn Profile:** [{company_info['LinkedIn Profile']}]({company_info['LinkedIn Profile']})")
+        st.markdown(f"**Company Website:** [{company_info['Company Website']}]({company_info['Company Website']})")
 
         with st.spinner("🤖 Generating AI recommendations..."):
             ai_recommendations = get_ai_recommendations(use_case, company_info, workspace_details)
