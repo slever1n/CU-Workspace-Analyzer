@@ -200,8 +200,20 @@ if st.button("🚀 Let's Go!"):
     workspace_data = None
     if api_key:
         with st.spinner("Fetching workspace data and crafting suggestions, this may take a while..."):
-            workspace_data = asyncio.run(get_clickup_workspace_data(api_key))  # Run the async function
-        if workspace_data is None:
+            try:
+                # Get the event loop. If it doesn't exist, create it.
+                loop = asyncio.get_event_loop()
+                if loop.is_closed():
+                    asyncio.set_event_loop(asyncio.new_event_loop())
+                    loop = asyncio.get_event_loop()
+                
+                workspace_data = loop.run_until_complete(get_clickup_workspace_data(api_key))
+
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+                st.stop()  # Stop execution to prevent further errors
+
+        if workspace_data is None: #check if API key is valid
             st.error("Invalid API Key provided.")
         elif "error" in workspace_data:
             st.error(workspace_data["error"])
