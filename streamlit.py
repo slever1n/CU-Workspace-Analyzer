@@ -121,8 +121,6 @@ def fetch_workspace_details(api_key, team_id):
             "📂 Folders": folder_count,
             "🗂️ Lists": list_count,
             "📝 Total Tasks": task_count,
-            "✅ Completed Tasks": completed_tasks,
-            "📈 Task Completion Rate": f"{round(task_completion_rate, 2)}%",
             "⚠️ Overdue Tasks": overdue_tasks,
             "🔥 High Priority Tasks": high_priority_tasks
         }
