@@ -22,7 +22,72 @@ if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
 def get_company_info(company_name):
-    # ... (Your get_company_info function - remains unchanged)
+
+    """
+
+    Generates a short company profile for the given company name using Gemini (or OpenAI if Gemini is unavailable).
+
+    """
+
+    if not company_name:
+
+        return "No company information provided."
+
+    
+
+    prompt = textwrap.dedent(f"""
+
+        Please build a short company profile for {company_name}. The profile should include the following sections in markdown:
+
+        - **Mission:** A brief mission statement.
+
+        - **Key Features:** List 3-5 key features of the company.
+
+        - **Values:** Describe the core values of the company.
+
+        - **Target Audience:** Describe who the company primarily serves.
+
+        - **Overall Summary:** Provide an overall summary of what the company does.
+
+    """)
+
+    
+
+    try:
+
+        if gemini_api_key:
+
+            model = genai.GenerativeModel("gemini-2.0-flash")
+
+            response = model.generate_content(prompt)
+
+            return response.text
+
+        elif openai_api_key:
+
+            response = openai.ChatCompletion.create(
+
+                model="gpt-4o",
+
+                messages=[
+
+                    {"role": "system", "content": "You are a helpful assistant."},
+
+                    {"role": "user", "content": prompt}
+
+                ]
+
+            )
+
+            return response["choices"][0]["message"]["content"]
+
+        else:
+
+            return "No AI service available for generating company profile."
+
+    except Exception as e:
+
+        return f"Error fetching company details: {str(e)}"
 
 async def fetch_workspace_details(api_key, team_id):  # Correct indentation here
     headers = {"Authorization": api_key}
