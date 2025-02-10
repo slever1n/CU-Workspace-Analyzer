@@ -218,9 +218,9 @@ def fetch_list_details(api_key, list_id):
     task_count += len(tasks)
 
     # Count completed, overdue, and high priority tasks
-    completed_tasks = sum(1 for task in tasks if task.get("status", {}).get("type", "") in ["closed", "done", "completed"])
+    completed_tasks = sum(1 for task in tasks if task.get("status", {}).get("status", None) and task.get("status", {}).get("status", "").lower() in ["closed", "done", "completed"])
     overdue_tasks = sum(1 for task in tasks if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
-    high_priority_tasks = sum(1 for task in tasks if task.get("priority", "") in ["urgent", "high"])
+    high_priority_tasks = sum(1 for task in tasks if task.get("priority", "").lower() in ["urgent", "high"])
 
     logging.info(f"Total tasks: {task_count}, Completed tasks: {completed_tasks}, Overdue tasks: {overdue_tasks}, High priority tasks: {high_priority_tasks}")
     
