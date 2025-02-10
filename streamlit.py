@@ -3,7 +3,7 @@ import requests
 import streamlit as st
 import threading
 import queue
-import time  # Import time for sleep
+import time
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
@@ -22,14 +22,46 @@ if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
 def get_company_info(company_name):
-    # ... (Your get_company_info function - remains unchanged)
+    """Generates a short company profile."""
+    if not company_name:
+        return "No company information provided."
+
+    prompt = textwrap.dedent(f"""
+        Please build a short company profile for {company_name}. The profile should include the following sections in markdown:
+        - **Mission:** A brief mission statement.
+        - **Key Features:** List 3-5 key features of the company.
+        - **Values:** Describe the core values of the company.
+        - **Target Audience:** Describe who the company primarily serves.
+        - **Overall Summary:** Provide an overall summary of what the company does.
+    """)
+
+    try:
+        if gemini_api_key:
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            response = model.generate_content(prompt)
+            return response.text
+        elif openai_api_key:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",  # or gpt-3.5-turbo
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response["choices"][0]["message"]["content"]
+        else:
+            return "No AI service available for generating company profile."
+    except Exception as e:
+        return f"Error fetching company details: {str(e)}"
+
+
 
 async def fetch_workspace_details(api_key, team_id):
     headers = {"Authorization": api_key}
     try:
         spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
         spaces_response = await asyncio.to_thread(requests.get, spaces_url, headers=headers)
-        spaces_response.raise_for_status()
+        spaces_response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
         spaces = spaces_response.json().get("spaces", [])
 
         space_count = len(spaces)
@@ -102,73 +134,50 @@ async def get_clickup_workspace_data(api_key):
     except Exception as e:
         return {"error": f"Exception: {str(e)}"}
 
-
 def get_ai_recommendations(use_case, company_profile, workspace_details):
     # ... (Your get_ai_recommendations function - remains unchanged)
+    prompt = textwrap.dedent(f"""
+        Based on the following workspace data:
+        {workspace_details if workspace_details else "(No workspace data available)"}
 
-def run_async_in_thread(func, args, q):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+        Considering the company's use case: "{use_case}"
+        And the following company profile:
+        {company_profile}
+
+        Please provide a detailed analysis.
+
+        <h3>📈 Productivity Analysis</h3>
+        Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
+
+        <h3>✅ Actionable Recommendations</h3>
+        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations from the company profile.
+
+        <h3>🏆 Best Practices & Tips</h3>
+        Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
+
+        <h3>🛠️ Useful ClickUp Templates & Resources</h3>
+        Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com. Provide 5-8 links.
+    """)
+
     try:
-        result = loop.run_until_complete(func(*args))
-        q.put(result)
+        if openai_api_key:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",  # or gpt-3.5-turbo
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response["choices"][0]["message"]["content"]
+        elif gemini_api_key:
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            response = model.generate_content(prompt)
+            return response.text
+        else:
+            return "⚠️ AI recommendations are not available because both AI services failed."
     except Exception as e:
-        q.put({"error": str(e)})
-    finally:
-        loop.close()
+        return f"Error generating recommendations: {str(e)}"
 
-# ----------------------- #
-# Streamlit UI
-# ----------------------- #
-st.title("🚀 ClickUp Workspace Analysis")
 
-api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password")
-company_name = st.text_input("🏢 Enter Company Name (Optional):")
-use_case = st.text_area("🏢 Describe your company's use case:")
 
-if st.button("🚀 Let's Go!"):
-    workspace_data = None
-    if api_key:
-        with st.spinner("Fetching workspace data and crafting suggestions, this may take a while..."):
-            q = queue.Queue()
-
-            thread = threading.Thread(target=run_async_in_thread, args=(get_clickup_workspace_data, (api_key,), q))
-            thread.start()
-
-            while True:
-                try:
-                    workspace_data = q.get_nowait()
-                    break
-                except queue.Empty:
-                    time.sleep(0.1)
-                    if not thread.is_alive():
-                        break
-
-            if workspace_data is None:
-                st.error("Invalid API Key provided or error fetching data.")
-            elif isinstance(workspace_data, dict) and "error" in workspace_data:
-                st.error(workspace_data["error"])
-            elif isinstance(workspace_data, dict) and "teams" not in workspace_data:
-                st.error("No teams found in ClickUp workspace.")
-            else:
-                st.subheader("📊 Workspace Summary")
-                cols = st.columns(4)
-                for idx, (key, value) in enumerate(workspace_data.items()):
-                    with cols[idx % 4]:
-                        st.metric(label=key, value=value)
-
-                # ... (rest of your Streamlit UI code - display workspace_data)
-
-    if company_name:
-        with st.spinner("Generating company profile..."):
-            company_profile = get_company_info(company_name)
-        st.subheader("🏢 Company Profile")
-        st.markdown(company_profile, unsafe_allow_html=True)
-    else:
-        company_profile = "No company information provided."
-
-    with st.spinner("Generating AI recommendations..."):
-        recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
-        st.markdown(recommendations, unsafe_allow_html=True)
-
-st.markdown("<div style='position: fixed; bottom: 10px; left: 7px;'>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
+def run
