@@ -135,19 +135,30 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
 
 # Streamlit UI
 st.title("🚀 ClickUp Workspace Analyzer")
-api_key = st.text_input("🔑 Enter ClickUp API Key:", type="password")
 
+# Input fields available immediately
+api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password")
+use_case = st.text_area("🏢 Describe your company's use case:")
+company_name = st.text_input("🏢 Enter Company Name (Optional):")
+
+# Analyze button (all inputs are already visible)
 if st.button("Analyze Workspace"):
-    with st.spinner("Fetching workspace data..."):
-        workspace_data = get_clickup_workspace_data(api_key)
-        if "error" in workspace_data:
+    workspace_data = None
+    if api_key:
+        with st.spinner("Fetching workspace data..."):
+            workspace_data = get_clickup_workspace_data(api_key)
+        if workspace_data is None:
+            st.error("Invalid API Key provided.")
+        elif "error" in workspace_data:
             st.error(workspace_data["error"])
         else:
             st.subheader("📊 Workspace Summary")
             st.json(workspace_data)
-            
-            use_case = st.text_area("🏢 Describe your company's use case:")
-            if st.button("Get AI Recommendations"):
-                with st.spinner("Generating recommendations..."):
-                    recommendations = get_ai_recommendations(use_case, "", workspace_data)
-                    st.markdown(recommendations)
+    else:
+        st.info("ClickUp API Key not provided. Skipping workspace data analysis.")
+
+    with st.spinner("Generating AI recommendations..."):
+        recommendations = get_ai_recommendations(use_case, company_name, workspace_data)
+        st.markdown(recommendations, unsafe_allow_html=True)
+
+st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
