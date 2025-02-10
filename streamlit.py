@@ -29,35 +29,27 @@ theme = st.sidebar.radio("Select Theme", ["Light", "Dark"])
 if theme == "Dark":
     st.markdown("""
         <style>
-        body {
+        .stApp {
             background-color: #0E1117;
             color: white;
         }
-        .reportview-container .main .block-container{
-             background-color: #0E1117;
-             color: white;
-        }
         h1, h2, h3, h4, h5, h6 {
-             color: white;
+            color: white;
         }
         </style>
-        """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 else:
     st.markdown("""
         <style>
-        body {
+        .stApp {
             background-color: white;
             color: black;
         }
-        .reportview-container .main .block-container{
-             background-color: white;
-             color: black;
-        }
         h1, h2, h3, h4, h5, h6 {
-             color: black;
+            color: black;
         }
         </style>
-        """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 # Additional CSS to enlarge headings in AI recommendations output
 st.markdown("""
