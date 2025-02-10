@@ -61,25 +61,24 @@ def get_company_info(company_name):
     except Exception as e:
         return f"Error fetching company details: {str(e)}"
 
-def fetch_workspace_data(api_key):
+def fetch_workspace_data(api_key, workspace_id):
     """
     Fetches real workspace data from the ClickUp API.
     """
-    if not api_key:
+    if not api_key or not workspace_id:
         return None
 
-    url = "https://api.clickup.com/api/v2/team"
     headers = {"Authorization": api_key}
 
     try:
         start_time = time.time()
+        url = f"https://api.clickup.com/api/v2/team/{workspace_id}"
         response = requests.get(url, headers=headers)
         logging.info(f"API call to {url} took {time.time() - start_time:.2f} seconds")
         if response.status_code == 200:
             teams = response.json().get("teams", [])
             if teams:
-                team_id = teams[0]["id"]
-                return fetch_workspace_details(api_key, team_id)
+                return fetch_workspace_details(api_key, workspace_id)
             else:
                 return {"error": "No teams found in ClickUp workspace."}
         else:
@@ -272,16 +271,17 @@ st.title("🚀 ClickUp Workspace Analysis")
 
 # Input fields available immediately
 api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password")
+workspace_id = st.text_input("🏢 Enter Workspace ID:")
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🏢 Describe your company's use case:")
 
 if st.button("🚀 Let's Go!"):
     workspace_data = None
-    if api_key:
+    if api_key and workspace_id:
         with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
-            workspace_data = fetch_workspace_data(api_key)
+            workspace_data = fetch_workspace_data(api_key, workspace_id)
         if workspace_data is None:
-            st.error("Invalid API Key provided.")
+            st.error("Invalid API Key or Workspace ID provided.")
         elif "error" in workspace_data:
             st.error(workspace_data["error"])
         else:
@@ -292,7 +292,7 @@ if st.button("🚀 Let's Go!"):
                 with cols[idx % 4]:
                     st.metric(label=key, value=value)
     else:
-        st.info("ClickUp API Key not provided. Skipping workspace data analysis.")
+        st.info("ClickUp API Key and Workspace ID not provided. Skipping workspace data analysis.")
 
     # Build and display company profile if a company name is provided
     if company_name:
