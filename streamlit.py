@@ -97,83 +97,10 @@ def fetch_workspace_details(api_key, team_id):
         }
     except Exception as e:
         return {"error": f"Exception: {str(e)}"}
-def get_company_info(company_name):
-    """Fetches basic company information from the web."""
-    search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
-    """Fetches company profile from Google, LinkedIn, and the company website."""
-    headers = {"User-Agent": "Mozilla/5.0"}
-
-    try:
-        response = requests.get(search_url, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")
-        
-        # Extract company details (rough heuristic)
-        description = ""
-        for tag in soup.find_all("span"):
-            text = tag.get_text()
-            if "is a" in text or "provides" in text or "specializes in" in text:
-                description = text
-                break
-        return description if description else "No detailed company info found."
-    except Exception as e:
-        return f"Error fetching company details: {str(e)}"
-    def search_google():
-        """Searches Google for company info."""
-        search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
-        try:
-            response = requests.get(search_url, headers=headers)
-            soup = BeautifulSoup(response.text, "html.parser")
-            for tag in soup.find_all("span"):
-                text = tag.get_text()
-                if "is a" in text or "provides" in text or "specializes in" in text:
-                    return text
-        except Exception as e:
-            return f"Error fetching Google info: {str(e)}"
-        return None
-    def search_linkedin():
-        """Searches LinkedIn for company info."""
-        search_url = f"https://www.google.com/search?q=site:linkedin.com/company/{company_name.replace(' ', '-')}"
-        try:
-            response = requests.get(search_url, headers=headers)
-            soup = BeautifulSoup(response.text, "html.parser")
-            for tag in soup.find_all("cite"):
-                if "linkedin.com/company/" in tag.text:
-                    return tag.text.strip()
-        except Exception as e:
-            return f"Error fetching LinkedIn info: {str(e)}"
-        return None
-    def search_company_website():
-        """Attempts to find and extract company info from their website."""
-        search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+official+website"
-        try:
-            response = requests.get(search_url, headers=headers)
-            soup = BeautifulSoup(response.text, "html.parser")
-            for tag in soup.find_all("cite"):
-                if "http" in tag.text:
-                    return tag.text.strip()
-        except Exception as e:
-            return f"Error fetching company website: {str(e)}"
-        return None
-    google_info = search_google()
-    linkedin_profile = search_linkedin()
-    company_website = search_company_website()
-    return {
-        "Google Description": google_info or "Not found",
-        "LinkedIn Profile": linkedin_profile or "Not found",
-        "Company Website": company_website or "Not found"
-    }
 
 def get_ai_recommendations(use_case, company_info, workspace_details):
     """Generates AI-powered recommendations using OpenAI or Gemini."""
     prompt = f"""
-    **📌 Use Case:** {use_case}
-    
-    **🏢 Company Profile:** {company_info}
-    **🏢 Company Profile:**
-    - **Google Description:** {company_info['Google Description']}
-    - **LinkedIn Profile:** {company_info['LinkedIn Profile']}
-    - **Company Website:** {company_info['Company Website']}
-    
     ### 🔍 Workspace Overview:
     {workspace_details if workspace_details else "(No workspace details available)"}
     
@@ -205,50 +132,3 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
             response = model.generate_content(prompt)
             return response.text
     return "⚠️ AI recommendations are not available because both OpenAI and Gemini failed."
-
-# UI Setup
-st.title("📊 ClickUp Workspace Analyzer")
-
-clickup_api_key = st.text_input("🔑 ClickUp API Key (Optional)", type="password")
-use_case = st.text_input("📌 Use Case (e.g., Consulting, Sales)")
-company_name = st.text_input("🏢 Company Name (Optional)")
-
-if st.button("🚀 Analyze Workspace"):
-    if not use_case:
-        st.error("Please enter a use case.")
-    else:
-        with st.spinner("🔄 Fetching ClickUp Workspace Data..."):
-            workspace_details = get_clickup_workspace_data(clickup_api_key) if clickup_api_key else None
-
-        with st.spinner("🌍 Searching for company information..."):
-            company_info = get_company_info(company_name) if company_name else {
-    "Google Description": "No company info provided.",
-    "LinkedIn Profile": "No company info provided.",
-    "Company Website": "No company info provided."
-}
-
-            }
-
-        if workspace_details and "error" in workspace_details:
-            st.error(f"❌ {workspace_details['error']}")
-        elif workspace_details:
-            st.subheader("📝 Workspace Analysis:")
-            cols = st.columns(4)
-            keys = list(workspace_details.keys())
-            for i, key in enumerate(keys):
-                with cols[i % 4]:
-                    st.metric(label=key, value=workspace_details[key])
-
-        # Display Company Info
-        st.subheader("🏢 Company Information:")
-        st.markdown(f"**{company_name}**: {company_info}")
-        st.markdown(f"**Google Description:** {company_info['Google Description']}")
-        st.markdown(f"**LinkedIn Profile:** [{company_info['LinkedIn Profile']}]({company_info['LinkedIn Profile']})")
-        st.markdown(f"**Company Website:** [{company_info['Company Website']}]({company_info['Company Website']})")
-
-        with st.spinner("🤖 Generating AI recommendations..."):
-            ai_recommendations = get_ai_recommendations(use_case, company_info, workspace_details)
-
-        st.markdown(ai_recommendations, unsafe_allow_html=True)
-
-st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
