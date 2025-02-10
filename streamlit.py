@@ -221,11 +221,12 @@ if st.button("🚀 Analyze Workspace"):
             workspace_details = get_clickup_workspace_data(clickup_api_key) if clickup_api_key else None
 
         with st.spinner("🌍 Searching for company information..."):
-            company_info = get_company_info(company_name) if company_name else "No company info provided."
             company_info = get_company_info(company_name) if company_name else {
-                "Google Description": "No company info provided.",
-                "LinkedIn Profile": "No company info provided.",
-                "Company Website": "No company info provided."
+    "Google Description": "No company info provided.",
+    "LinkedIn Profile": "No company info provided.",
+    "Company Website": "No company info provided."
+}
+
             }
 
         if workspace_details and "error" in workspace_details:
