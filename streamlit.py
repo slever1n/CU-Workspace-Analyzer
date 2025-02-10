@@ -1,5 +1,3 @@
-Source code
-
 import requests
 import streamlit as st
 import time
