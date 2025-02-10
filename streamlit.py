@@ -10,7 +10,6 @@ st.set_page_config(page_title="ClickUp Workspace Analyzer", page_icon="🚀", la
 # Retrieve API keys from Streamlit secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 gemini_api_key = st.secrets.get("GEMINI_API_KEY")
-clickup_api_key = st.text_input("🔑 ClickUp API Key (Optional)", type="password")
 
 # Configure OpenAI and Gemini
 if openai_api_key:
@@ -166,8 +165,9 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
 # UI Setup
 st.title("📊 ClickUp Workspace Analyzer")
 
-use_case = st.text_input("📌 Use Case (e.g., Consulting, Sales)")
+clickup_api_key = st.text_input("🔑 ClickUp API Key (Optional)", type="password")
 company_name = st.text_input("🏢 Company Name (Optional)")
+use_case = st.text_input("📌 Use Case (e.g., Consulting, Sales)")
 
 if st.button("🚀 Analyze Workspace"):
     if not use_case:
