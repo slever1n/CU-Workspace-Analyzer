@@ -35,20 +35,19 @@ def get_company_info(company_name):
     """)
     
     try:
-        if openai_api_key:
-            client = openai.OpenAI(api_key=openai_api_key)
-            response = client.chat.completions.create(
+        if gemini_api_key:
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            response = model.generate_content(prompt)
+            return response.text
+        elif openai_api_key:
+            response = openai.ChatCompletion.create(
                 model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": prompt}
                 ]
             )
-            return response.choices[0].message.content
-        elif gemini_api_key:
-            model = genai.GenerativeModel("gemini-2.0-flash")
-            response = model.generate_content(prompt)
-            return response.text
+            return response["choices"][0]["message"]["content"]
         else:
             return "No AI service available for generating company profile."
     except Exception as e:
