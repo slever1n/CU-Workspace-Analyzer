@@ -3,6 +3,7 @@ import streamlit as st
 import time
 import openai
 import google.generativeai as genai
+import textwrap
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analyzer", page_icon="🚀", layout="wide")
@@ -21,17 +22,21 @@ if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
 def get_company_info(company_name):
-    """Generates a short company profile for the given company name using Gemini (or OpenAI if Gemini is unavailable)."""
+    """
+    Generates a short company profile for the given company name using Gemini (or OpenAI if Gemini is unavailable).
+    """
     if not company_name:
         return "No company information provided."
-    prompt = f"""
-Please build a short company profile for {company_name}. The profile should include the following sections in markdown:
-- **Mission:** A brief mission statement.
-- **Key Features:** List 3-5 key features of the company.
-- **Values:** Describe the core values of the company.
-- **Target Audience:** Describe who the company primarily serves.
-- **Overall Summary:** Provide an overall summary of what the company does.
-"""
+    
+    prompt = textwrap.dedent(f"""
+        Please build a short company profile for {company_name}. The profile should include the following sections in markdown:
+        - **Mission:** A brief mission statement.
+        - **Key Features:** List 3-5 key features of the company.
+        - **Values:** Describe the core values of the company.
+        - **Target Audience:** Describe who the company primarily serves.
+        - **Overall Summary:** Provide an overall summary of what the company does.
+    """)
+    
     try:
         if gemini_api_key:
             model = genai.GenerativeModel("gemini-2.0-flash")
@@ -52,7 +57,9 @@ Please build a short company profile for {company_name}. The profile should incl
         return f"Error fetching company details: {str(e)}"
 
 def get_clickup_workspace_data(api_key):
-    """Fetches real workspace data from ClickUp API."""
+    """
+    Fetches real workspace data from the ClickUp API.
+    """
     if not api_key:
         return None
 
@@ -74,7 +81,9 @@ def get_clickup_workspace_data(api_key):
         return {"error": f"Exception: {str(e)}"}
 
 def fetch_workspace_details(api_key, team_id):
-    """Fetches workspace details including spaces, folders, lists, and tasks."""
+    """
+    Fetches workspace details including spaces, folders, lists, and tasks.
+    """
     headers = {"Authorization": api_key}
     
     try:
@@ -88,7 +97,6 @@ def fetch_workspace_details(api_key, team_id):
         
         for space in spaces:
             space_id = space["id"]
-            
             folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
             folders_response = requests.get(folders_url, headers=headers).json()
             folders = folders_response.get("folders", [])
@@ -96,7 +104,6 @@ def fetch_workspace_details(api_key, team_id):
             
             for folder in folders:
                 folder_id = folder["id"]
-                
                 lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
                 lists_response = requests.get(lists_url, headers=headers).json()
                 lists = lists_response.get("lists", [])
@@ -104,15 +111,16 @@ def fetch_workspace_details(api_key, team_id):
                 
                 for lst in lists:
                     list_id = lst["id"]
-                    
                     tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
                     tasks_response = requests.get(tasks_url, headers=headers).json()
                     tasks = tasks_response.get("tasks", [])
                     
                     task_count += len(tasks)
                     completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
-                    overdue_tasks += sum(1 for task in tasks if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
-                    high_priority_tasks += sum(1 for task in tasks if task.get("priority", "") in ["urgent", "high"])
+                    overdue_tasks += sum(1 for task in tasks 
+                                         if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
+                    high_priority_tasks += sum(1 for task in tasks 
+                                               if task.get("priority", "") in ["urgent", "high"])
         
         task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
         
@@ -130,30 +138,32 @@ def fetch_workspace_details(api_key, team_id):
         return {"error": f"Exception: {str(e)}"}
 
 def get_ai_recommendations(use_case, company_profile, workspace_details):
-    """Generates AI-powered recommendations using OpenAI or Gemini."""
-    prompt = f"""
-Based on the following workspace data:
-{workspace_details if workspace_details else "(No workspace data available)"}
-
-Considering the company's use case: "{use_case}"
-And the following company profile:
-{company_profile}
-
-Please provide a detailed analysis.
-
-### 📈 Productivity Analysis:
-Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
-
-### ✅ Actionable Recommendations:
-Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations from the company profile.
-
-### 🏆 Best Practices & Tips:
-Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
-
-### 🛠️ Useful ClickUp Templates & Resources:
-Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
     """
-
+    Generates AI-powered recommendations based on workspace data, company profile, and use case.
+    """
+    prompt = textwrap.dedent(f"""
+        Based on the following workspace data:
+        {workspace_details if workspace_details else "(No workspace data available)"}
+        
+        Considering the company's use case: "{use_case}"
+        And the following company profile:
+        {company_profile}
+        
+        Please provide a detailed analysis.
+        
+        ### 📈 Productivity Analysis:
+        Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
+        
+        ### ✅ Actionable Recommendations:
+        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations from the company profile.
+        
+        ### 🏆 Best Practices & Tips:
+        Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
+        
+        ### 🛠️ Useful ClickUp Templates & Resources:
+        Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
+    """)
+    
     try:
         if openai_api_key:
             response = openai.ChatCompletion.create(
@@ -198,7 +208,7 @@ if st.button("Analyze Workspace"):
     else:
         st.info("ClickUp API Key not provided. Skipping workspace data analysis.")
 
-    # Build and display company profile if company name is provided
+    # Build and display company profile if a company name is provided
     if company_name:
         with st.spinner("Generating company profile..."):
             company_profile = get_company_info(company_name)
