@@ -55,15 +55,27 @@ def fetch_workspace_details(api_key, team_id):
                 "📁 Spaces": len(spaces),
                 "📂 Folders": sum(len(space.get("folders", [])) for space in spaces),
                 "🗂️ Lists": sum(len(space.get("lists", [])) for space in spaces),
-                "✅ Completed Tasks": sum(task.get("status", "") == "completed" for space in spaces for task in space.get("tasks", [])),
-                "⚠️ Overdue Tasks": sum(task.get("due_date", 0) and int(task["due_date"]) < int(time.time() * 1000) for space in spaces for task in space.get("tasks", [])),
-                "📝 Total Tasks": sum(len(space.get("tasks", [])) for space in spaces),
-                "🔥 High Priority Tasks": sum(task.get("priority", "") == "urgent" for space in spaces for task in space.get("tasks", []))
+                "✅ Completed Tasks": sum(1 for space in spaces for folder in space.get("folders", []) for list_item in folder.get("lists", []) for task in list_item.get("tasks", []) if task.get("status", "") == "completed"),
+                "⚠️ Overdue Tasks": sum(1 for space in spaces for folder in space.get("folders", []) for list_item in folder.get("lists", []) for task in list_item.get("tasks", []) if task.get("due_date", 0) and int(task["due_date"]) < int(time.time() * 1000)),
+                "📝 Total Tasks": sum(len(list_item.get("tasks", [])) for space in spaces for folder in space.get("folders", []) for list_item in folder.get("lists", [])),
+                "🔥 High Priority Tasks": sum(1 for space in spaces for folder in space.get("folders", []) for list_item in folder.get("lists", []) for task in list_item.get("tasks", []) if task.get("priority", "") == "urgent")
             }
         else:
             return {"error": f"Error fetching workspace details: {response.status_code}"}
     except Exception as e:
         return {"error": f"Exception fetching workspace details: {str(e)}"}
+
+def display_workspace_data(workspace_data):
+    """Displays workspace data in a beautiful tiled format."""
+    if "error" in workspace_data:
+        st.error(workspace_data["error"])
+        return
+    
+    cols = st.columns(4)
+    tiles = list(workspace_data.items())
+    for i, (title, value) in enumerate(tiles):
+        with cols[i % 4]:
+            st.metric(label=title, value=value)
 
 def get_company_info(company_name, use_case):
     """Generates AI-based company profile."""
@@ -87,45 +99,6 @@ def get_company_info(company_name, use_case):
             return response.text
     return "⚠️ AI-generated company profile is not available."
 
-def get_ai_recommendations(use_case, company_profile, workspace_details):
-    """Generates AI-powered recommendations using OpenAI or Gemini."""
-    prompt = f"""
-    **📌 Use Case:** {use_case}
-    
-    **🏢 Company Profile:**
-    {company_profile}
-    
-    **🔍 Workspace Overview:**
-    {workspace_details if workspace_details else "(No workspace details available)"}
-    
-    **📈 Productivity Analysis:**
-    Provide insights on how to optimize productivity for this company and use case.
-    
-    **✅ Actionable Recommendations:**
-    Suggest practical steps to improve efficiency and organization based on company profile.
-    
-    **🏆 Best Practices & Tips:**
-    Share industry-specific best practices to maximize workflow efficiency.
-    
-    **🛠️ Useful ClickUp Templates & Resources:**
-    List relevant ClickUp templates and best practices for this use case.
-    Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
-    """
-    try:
-        if openai_api_key:
-            response = openai.ChatCompletion.create(
-                model="gpt-4o",
-                messages=[{"role": "system", "content": "You are a helpful assistant."},
-                          {"role": "user", "content": prompt}]
-            )
-            return response["choices"][0]["message"]["content"]
-    except Exception as e:
-        if gemini_api_key:
-            model = genai.GenerativeModel("gemini-pro")
-            response = model.generate_content(prompt)
-            return response.text
-    return "⚠️ AI recommendations are not available."
-
 # UI Setup
 st.title("📊 ClickUp Workspace Analyzer")
 
@@ -138,16 +111,12 @@ if option == "Enter ClickUp API Key":
         with st.spinner("Analyzing ClickUp workspace... ⏳"):
             workspace_details = get_clickup_workspace_data(clickup_api_key)
         st.subheader("📊 Workspace Analysis:")
-        st.json(workspace_details)
-        ai_recommendations = get_ai_recommendations(use_case, "(Workspace analysis only)", workspace_details)
-        st.subheader("📌 AI Recommendations:")
-        st.markdown(ai_recommendations, unsafe_allow_html=True)
+        display_workspace_data(workspace_details)
 
 elif option == "Enter Company Name":
     company_name = st.text_input("🏢 Company Name")
     if st.button("🚀 Analyze"):
         with st.spinner("Generating company profile... ⏳"):
             company_profile = get_company_info(company_name, use_case)
-        ai_recommendations = get_ai_recommendations(use_case, company_profile, "No workspace details available")
         st.subheader("📌 AI Recommendations:")
-        st.markdown(ai_recommendations, unsafe_allow_html=True)
+        st.markdown(company_profile, unsafe_allow_html=True)
