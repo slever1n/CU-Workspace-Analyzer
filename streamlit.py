@@ -1,3 +1,4 @@
+@@ -1,197 +1,184 @@
 import requests
 import streamlit as st
 import time
@@ -21,80 +22,176 @@ if openai_api_key:
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
-def fetch_workspace_details(clickup_api_key, team_id):
-    """Fetch detailed workspace data including spaces, tasks, and completion stats."""
-    headers = {"Authorization": clickup_api_key}
-    
-    spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
+def get_clickup_workspace_data(api_key):
+    """Fetches real workspace data from ClickUp API."""
+    if not api_key:
+        return None
+
+    url = "https://api.clickup.com/api/v2/team"
+    headers = {"Authorization": api_key}
+
     try:
-        response = requests.get(spaces_url, headers=headers)
+        response = requests.get(url, headers=headers)
         if response.status_code == 200:
-            spaces = response.json().get("spaces", [])
-            return {
-                "📁 Spaces": len(spaces),
-                "📂 Folders": sum(len(space.get("folders", [])) for space in spaces),
-                "🗂️ Lists": sum(len(space.get("lists", [])) for space in spaces),
-                "✅ Completed Tasks": sum(1 for space in spaces for folder in space.get("folders", []) for list_item in folder.get("lists", []) for task in list_item.get("tasks", []) if task.get("status", "") == "completed"),
-                "⚠️ Overdue Tasks": sum(1 for space in spaces for folder in space.get("folders", []) for list_item in folder.get("lists", []) for task in list_item.get("tasks", []) if task.get("due_date", 0) and int(task["due_date"]) < int(time.time() * 1000)),
-                "📝 Total Tasks": sum(len(list_item.get("tasks", [])) for space in spaces for folder in space.get("folders", []) for list_item in folder.get("lists", [])),
-                "🔥 High Priority Tasks": sum(1 for space in spaces for folder in space.get("folders", []) for list_item in folder.get("lists", []) for task in list_item.get("tasks", []) if task.get("priority", "") == "urgent")
-            }
+            teams = response.json().get("teams", [])
+            if teams:
+                team_id = teams[0]["id"]
+                return fetch_workspace_details(api_key, team_id)
+            else:
+                return {"error": "No teams found in ClickUp workspace."}
         else:
-            return {"error": f"Error fetching workspace details: {response.status_code}"}
+            return {"error": f"Error: {response.status_code} - {response.json()}"}
     except Exception as e:
-        return {"error": f"Exception fetching workspace details: {str(e)}"}
+        return {"error": f"Exception: {str(e)}"}
+
+def fetch_workspace_details(api_key, team_id):
+    """Fetches workspace details including spaces, folders, lists, and tasks."""
+    headers = {"Authorization": api_key}
+    
+    try:
+        spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
+        spaces_response = requests.get(spaces_url, headers=headers).json()
+        spaces = spaces_response.get("spaces", [])
+        
+        space_count = len(spaces)
+        folder_count, list_count, task_count, completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0, 0, 0, 0
+        
+        for space in spaces:
+            space_id = space["id"]
+            
+            folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
+            folders_response = requests.get(folders_url, headers=headers).json()
+            folders = folders_response.get("folders", [])
+            folder_count += len(folders)
+            
+            for folder in folders:
+                folder_id = folder["id"]
+                
+                lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
+                lists_response = requests.get(lists_url, headers=headers).json()
+                lists = lists_response.get("lists", [])
+                list_count += len(lists)
+                
+                for lst in lists:
+                    list_id = lst["id"]
+                    
+                    tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
+                    tasks_response = requests.get(tasks_url, headers=headers).json()
+                    tasks = tasks_response.get("tasks", [])
+                    
+                    task_count += len(tasks)
+                    completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
+                    overdue_tasks += sum(1 for task in tasks if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
+                    high_priority_tasks += sum(1 for task in tasks if task.get("priority", "") in ["urgent", "high"])
+        
+        task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
+        
+        return {
+            "📁 Spaces": space_count,
+            "📂 Folders": folder_count,
+            "🗂️ Lists": list_count,
+            "📝 Total Tasks": task_count,
+            "✅ Completed Tasks": completed_tasks,
+            "📈 Task Completion Rate": round(task_completion_rate, 2),
+            "⚠️ Overdue Tasks": overdue_tasks,
+            "🔥 High Priority Tasks": high_priority_tasks
+        }
+    except Exception as e:
+        return {"error": f"Exception: {str(e)}"}
+def get_company_info(company_name):
+    """Fetches basic company information from the web."""
+    search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
+    """Fetches company profile from Google, LinkedIn, and the company website."""
+    headers = {"User-Agent": "Mozilla/5.0"}
+
+    try:
+        response = requests.get(search_url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
+        
+        # Extract company details (rough heuristic)
+        description = ""
+        for tag in soup.find_all("span"):
+            text = tag.get_text()
+            if "is a" in text or "provides" in text or "specializes in" in text:
+                description = text
+                break
+        return description if description else "No detailed company info found."
+    except Exception as e:
+        return f"Error fetching company details: {str(e)}"
+    def search_google():
+        """Searches Google for company info."""
+        search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
+        try:
+            response = requests.get(search_url, headers=headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            for tag in soup.find_all("span"):
+                text = tag.get_text()
+                if "is a" in text or "provides" in text or "specializes in" in text:
+                    return text
+        except Exception as e:
+            return f"Error fetching Google info: {str(e)}"
+        return None
+    def search_linkedin():
+        """Searches LinkedIn for company info."""
+        search_url = f"https://www.google.com/search?q=site:linkedin.com/company/{company_name.replace(' ', '-')}"
+        try:
+            response = requests.get(search_url, headers=headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            for tag in soup.find_all("cite"):
+                if "linkedin.com/company/" in tag.text:
+                    return tag.text.strip()
+        except Exception as e:
+            return f"Error fetching LinkedIn info: {str(e)}"
+        return None
+    def search_company_website():
+        """Attempts to find and extract company info from their website."""
+        search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+official+website"
+        try:
+            response = requests.get(search_url, headers=headers)
+            soup = BeautifulSoup(response.text, "html.parser")
+            for tag in soup.find_all("cite"):
+                if "http" in tag.text:
+                    return tag.text.strip()
+        except Exception as e:
+            return f"Error fetching company website: {str(e)}"
+        return None
+    google_info = search_google()
+    linkedin_profile = search_linkedin()
+    company_website = search_company_website()
+    return {
+        "Google Description": google_info or "Not found",
+        "LinkedIn Profile": linkedin_profile or "Not found",
+        "Company Website": company_website or "Not found"
+    }
 
 def get_ai_recommendations(use_case, company_info, workspace_details):
     """Generates AI-powered recommendations using OpenAI or Gemini."""
     prompt = f"""
     **📌 Use Case:** {use_case}
     
+    **🏢 Company Profile:** {company_info}
     **🏢 Company Profile:**
     - **Google Description:** {company_info['Google Description']}
     - **LinkedIn Profile:** {company_info['LinkedIn Profile']}
     - **Company Website:** {company_info['Company Website']}
     
+    ### 🔍 Workspace Overview:
+    {workspace_details if workspace_details else "(No workspace details available)"}
+    
     ### 📈 Productivity Analysis:
-    - Identify workflow bottlenecks and inefficiencies.
-    - Evaluate task completion rates and overdue tasks.
-    - Assess workload distribution across teams.
-    - Suggest automation opportunities to reduce manual work.
-    - Highlight underutilized ClickUp features.
-    - Compare team performance against industry benchmarks.
-    - Identify redundant tasks and streamline processes.
-    - Recommend task prioritization strategies.
+    Provide insights on how to optimize productivity for this company and use case.
     
     ### ✅ Actionable Recommendations:
-    - Implement task automation for repetitive processes.
-    - Optimize task dependencies to avoid bottlenecks.
-    - Set clear OKRs and track progress in ClickUp.
-    - Establish standardized naming conventions for clarity.
-    - Use ClickUp dashboards for real-time analytics.
-    - Encourage team collaboration with ClickUp Docs.
-    - Leverage recurring tasks for ongoing workflows.
-    - Assign priorities and deadlines effectively.
+    Suggest practical steps to improve efficiency and organization based on company profile.
     
     ### 🏆 Best Practices & Tips:
-    - Use templates for recurring project structures.
-    - Regularly review completed tasks for insights.
-    - Encourage time tracking for accurate estimations.
-    - Integrate ClickUp with other productivity tools.
-    - Set up notifications to stay informed.
-    - Use custom statuses for better workflow tracking.
-    - Conduct weekly stand-ups using ClickUp comments.
-    - Train teams on advanced ClickUp features.
+    Share industry-specific best practices to maximize workflow efficiency.
     
     ### 🛠️ Useful ClickUp Templates & Resources:
-    - [Task Management Template](https://clickup.com/templates/task-management)
-    - [OKR Tracking Template](https://clickup.com/templates/okr-tracking)
-    - [Agile Scrum Template](https://clickup.com/templates/agile-scrum)
-    - [Sales CRM Template](https://clickup.com/templates/sales-crm)
-    - [Product Roadmap Template](https://clickup.com/templates/product-roadmap)
-    - [Team Collaboration Guide](https://university.clickup.com/)
-    - [ClickUp Help Center](https://help.clickup.com/)
-    - [Productivity Webinars](https://clickup.com/webinars)
+    List relevant ClickUp templates and best practices for this use case.
+    Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
     """
-    
+
     try:
         if openai_api_key:
             response = openai.ChatCompletion.create(
@@ -112,4 +209,46 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
 
 # UI Setup
 st.title("📊 ClickUp Workspace Analyzer")
-st.markdown("Analyze your ClickUp workspace efficiency and get AI-powered recommendations.")
+
+clickup_api_key = st.text_input("🔑 ClickUp API Key (Optional)", type="password")
+use_case = st.text_input("📌 Use Case (e.g., Consulting, Sales)")
+company_name = st.text_input("🏢 Company Name (Optional)")
+
+if st.button("🚀 Analyze Workspace"):
+    if not use_case:
+        st.error("Please enter a use case.")
+    else:
+        with st.spinner("🔄 Fetching ClickUp Workspace Data..."):
+            workspace_details = get_clickup_workspace_data(clickup_api_key) if clickup_api_key else None
+
+        with st.spinner("🌍 Searching for company information..."):
+            company_info = get_company_info(company_name) if company_name else "No company info provided."
+            company_info = get_company_info(company_name) if company_name else {
+                "Google Description": "No company info provided.",
+                "LinkedIn Profile": "No company info provided.",
+                "Company Website": "No company info provided."
+            }
+
+        if workspace_details and "error" in workspace_details:
+            st.error(f"❌ {workspace_details['error']}")
+        elif workspace_details:
+            st.subheader("📝 Workspace Analysis:")
+            cols = st.columns(4)
+            keys = list(workspace_details.keys())
+            for i, key in enumerate(keys):
+                with cols[i % 4]:
+                    st.metric(label=key, value=workspace_details[key])
+
+        # Display Company Info
+        st.subheader("🏢 Company Information:")
+        st.markdown(f"**{company_name}**: {company_info}")
+        st.markdown(f"**Google Description:** {company_info['Google Description']}")
+        st.markdown(f"**LinkedIn Profile:** [{company_info['LinkedIn Profile']}]({company_info['LinkedIn Profile']})")
+        st.markdown(f"**Company Website:** [{company_info['Company Website']}]({company_info['Company Website']})")
+
+        with st.spinner("🤖 Generating AI recommendations..."):
+            ai_recommendations = get_ai_recommendations(use_case, company_info, workspace_details)
+
+        st.markdown(ai_recommendations, unsafe_allow_html=True)
+
+st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
