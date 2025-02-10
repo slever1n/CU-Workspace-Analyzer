@@ -1,3 +1,5 @@
+import aiohttp
+import asyncio
 import requests
 import streamlit as st
 import time
@@ -56,7 +58,7 @@ def get_company_info(company_name):
     except Exception as e:
         return f"Error fetching company details: {str(e)}"
 
-def get_clickup_workspace_data(api_key):
+async def get_clickup_workspace_data(api_key):
     """
     Fetches real workspace data from the ClickUp API.
     """
@@ -66,76 +68,83 @@ def get_clickup_workspace_data(api_key):
     url = "https://api.clickup.com/api/v2/team"
     headers = {"Authorization": api_key}
 
-    try:
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            teams = response.json().get("teams", [])
-            if teams:
-                team_id = teams[0]["id"]
-                return fetch_workspace_details(api_key, team_id)
-            else:
-                return {"error": "No teams found in ClickUp workspace."}
-        else:
-            return {"error": f"Error: {response.status_code} - {response.json()}"}
-    except Exception as e:
-        return {"error": f"Exception: {str(e)}"}
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    teams = data.get("teams", [])
+                    if teams:
+                        team_id = teams[0]["id"]
+                        return await fetch_workspace_details(api_key, team_id)
+                    else:
+                        return {"error": "No teams found in ClickUp workspace."}
+                else:
+                    return {"error": f"Error: {response.status} - {await response.json()}"}
+        except Exception as e:
+            return {"error": f"Exception: {str(e)}"}
 
-def fetch_workspace_details(api_key, team_id):
+async def fetch_workspace_details(api_key, team_id):
     """
     Fetches workspace details including spaces, folders, lists, and tasks.
     """
     headers = {"Authorization": api_key}
     
-    try:
-        spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
-        spaces_response = requests.get(spaces_url, headers=headers).json()
-        spaces = spaces_response.get("spaces", [])
-        
-        space_count = len(spaces)
-        folder_count, list_count, task_count = 0, 0, 0
-        completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
-        
-        for space in spaces:
-            space_id = space["id"]
-            folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
-            folders_response = requests.get(folders_url, headers=headers).json()
-            folders = folders_response.get("folders", [])
-            folder_count += len(folders)
-            
-            for folder in folders:
-                folder_id = folder["id"]
-                lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
-                lists_response = requests.get(lists_url, headers=headers).json()
-                lists = lists_response.get("lists", [])
-                list_count += len(lists)
+    async with aiohttp.ClientSession() as session:
+        try:
+            spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
+            async with session.get(spaces_url, headers=headers) as spaces_response:
+                spaces_data = await spaces_response.json()
+                spaces = spaces_data.get("spaces", [])
                 
-                for lst in lists:
-                    list_id = lst["id"]
-                    tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
-                    tasks_response = requests.get(tasks_url, headers=headers).json()
-                    tasks = tasks_response.get("tasks", [])
-                    
-                    task_count += len(tasks)
-                    completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
-                    overdue_tasks += sum(1 for task in tasks 
-                                         if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
-                    high_priority_tasks += sum(1 for task in tasks 
-                                               if task.get("priority", "") in ["urgent", "high"])
-        
-        task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
-        
-        return {
-            "📁 Spaces": space_count,
-            "📂 Folders": folder_count,
-            "🗂️ Lists": list_count,
-            "📝 Total Tasks": task_count,
-            "✅ Completed Tasks": completed_tasks,
-            "📈 Task Completion Rate": f"{round(task_completion_rate, 2)}%",
-            "⚠️ Overdue Tasks": overdue_tasks,
-            "🔥 High Priority Tasks": high_priority_tasks
-        }
-    except Exception as e:
-        return {"error": f"Exception: {str(e)}"}
+                space_count = len(spaces)
+                folder_count, list_count, task_count = 0, 0, 0
+                completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+                
+                for space in spaces:
+                    space_id = space["id"]
+                    folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
+                    async with session.get(folders_url, headers=headers) as folders_response:
+                        folders_data = await folders_response.json()
+                        folders = folders_data.get("folders", [])
+                        folder_count += len(folders)
+                        
+                        for folder in folders:
+                            folder_id = folder["id"]
+                            lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
+                            async with session.get(lists_url, headers=headers) as lists_response:
+                                lists_data = await lists_response.json()
+                                lists = lists_data.get("lists", [])
+                                list_count += len(lists)
+                                
+                                for lst in lists:
+                                    list_id = lst["id"]
+                                    tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
+                                    async with session.get(tasks_url, headers=headers) as tasks_response:
+                                        tasks_data = await tasks_response.json()
+                                        tasks = tasks_data.get("tasks", [])
+                                        
+                                        task_count += len(tasks)
+                                        completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
+                                        overdue_tasks += sum(1 for task in tasks 
+                                                             if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
+                                        high_priority_tasks += sum(1 for task in tasks 
+                                                                   if task.get("priority", "") in ["urgent", "high"])
+                
+                task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
+                
+                return {
+                    "📁 Spaces": space_count,
+                    "📂 Folders": folder_count,
+                    "🗂️ Lists": list_count,
+                    "📝 Total Tasks": task_count,
+                    "✅ Completed Tasks": completed_tasks,
+                    "📈 Task Completion Rate": f"{round(task_completion_rate, 2)}%",
+                    "⚠️ Overdue Tasks": overdue_tasks,
+                    "🔥 High Priority Tasks": high_priority_tasks
+                }
+        except Exception as e:
+            return {"error": f"Exception: {str(e)}"}
 
 def get_ai_recommendations(use_case, company_profile, workspace_details):
     """
@@ -196,7 +205,9 @@ if st.button("🚀 Let's Go!"):
     workspace_data = None
     if api_key:
         with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
-            workspace_data = get_clickup_workspace_data(api_key)
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            workspace_data = loop.run_until_complete(get_clickup_workspace_data(api_key))
         if workspace_data is None:
             st.error("Invalid API Key provided.")
         elif "error" in workspace_data:
