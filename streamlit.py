@@ -202,20 +202,27 @@ if st.button("🚀 Let's Go!"):
     if api_key:
         with st.spinner("Fetching workspace data and crafting suggestions, this may take a while..."):
             try:
-                # Get the event loop. If it doesn't exist, create it.
-                loop = asyncio.get_event_loop()
-                if loop.is_closed():
-                    asyncio.set_event_loop(asyncio.new_event_loop())
-                    loop = asyncio.get_event_loop()
-                
-                workspace_data = loop.run_until_complete(get_clickup_workspace_data(api_key))
+                # Use st.cache_data to manage the event loop and caching
+                @st.cache_data  # Important for caching and thread safety
+                def get_workspace_data_cached(api_key):
+                    try:
+                        loop = asyncio.new_event_loop()  # Create a NEW loop for the thread
+                        asyncio.set_event_loop(loop)   # Set it as the current loop
+                        result = loop.run_until_complete(get_clickup_workspace_data(api_key))
+                        loop.close() # Close the loop when done
+                        return result
+                    except Exception as e:
+                        st.error(f"An error occurred within the thread: {e}") # Handle error inside thread
+                        return None # Indicate failure
+
+                workspace_data = get_workspace_data_cached(api_key)
 
             except Exception as e:
-                st.error(f"An error occurred: {e}")
+                st.error(f"A Streamlit error occurred: {e}")
                 st.stop()  # Stop execution to prevent further errors
 
-        if workspace_data is None: #check if API key is valid
-            st.error("Invalid API Key provided.")
+        if workspace_data is None:
+            st.error("Invalid API Key provided or error fetching data.")  # More informative message
         elif "error" in workspace_data:
             st.error(workspace_data["error"])
         else:
