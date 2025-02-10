@@ -211,13 +211,15 @@ def fetch_list_details(api_key, list_id):
     logging.info(f"API call to {tasks_url} took {time.time() - start_time:.2f} seconds")
     tasks = tasks_response.get("tasks", [])
     task_count += len(tasks)
+    
+    for task in tasks:
+        status = task.get("status", {}).get("status", "").lower()
+        logging.info(f"Task ID: {task['id']} - Status: {status}")
+        completed_tasks += 1 if status in ["closed", "done", "completed"] else 0
+        overdue_tasks += 1 if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000) else 0
+        high_priority_tasks += 1 if task.get("priority", "") in ["urgent", "high"] else 0
 
-    # Count completed, overdue, and high priority tasks
-    completed_tasks = sum(1 for task in tasks if task.get("status", {}).get("status", "").lower() in ["closed", "done", "completed"])
-    overdue_tasks = sum(1 for task in tasks if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
-    high_priority_tasks = sum(1 for task in tasks if task.get("priority", "").lower() in ["urgent", "high"])
-
-    logging.info(f"Total tasks: {task_count}, Completed tasks: {completed_tasks}, Overdue tasks: {overdue_tasks}, High priority tasks: {high_priority_tasks}")
+    logging.info(f"Total tasks: {task_count}, Completed tasks: {completed_tasks}")
     
     return {
         'task_count': task_count,
