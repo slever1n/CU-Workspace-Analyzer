@@ -217,4 +217,105 @@ def fetch_list_details(api_key, list_id):
         logging.info(f"Task ID: {task['id']} - Status Type: {status_type}")
         completed_tasks += 1 if status_type in ["closed", "done"] else 0
         overdue_tasks += 1 if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000) else 0
-        high_priority_tasks += 1 if task.get("priority ▋
+        high_priority_tasks += 1 if task.get("priority", "") in ["urgent", "high"] else 0
+    
+    return {
+        'task_count': task_count,
+        'completed_tasks': completed_tasks,
+        'overdue_tasks': overdue_tasks,
+        'high_priority_tasks': high_priority_tasks
+    }
+
+def get_ai_recommendations(use_case, company_profile, workspace_details):
+    """
+    Generates AI-powered recommendations based on workspace data, company profile, and use case.
+    """
+    prompt = textwrap.dedent(f"""
+        Based on the following workspace data:
+        {workspace_details if workspace_details else "(No workspace data available)"}
+        
+        Considering the company's use case: "{use_case}"
+        And the following company profile:
+        {company_profile}
+        
+        Please provide a detailed analysis.
+        
+        <h3>📈 Productivity Analysis</h3>
+        Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
+        
+        <h3>✅ Actionable Recommendations</h3>
+        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations from the company profile.
+        
+        <h3>🏆 Best Practices & Tips</h3>
+        Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
+        
+        <h3>🛠️ Useful ClickUp Templates & Resources</h3>
+        Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com. Provide 5-8 links.
+    """)
+    
+    try:
+        if openai_api_key:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response["choices"][0]["message"]["content"]
+    except Exception as e:
+        if gemini_api_key:
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            response = model.generate_content(prompt)
+            return response.text
+    return "⚠️ AI recommendations are not available because both AI services failed."
+
+# ----------------------- #
+# Streamlit UI
+# ----------------------- #
+st.title("🚀 ClickUp Workspace Analysis")
+
+# Input fields available immediately
+api_key = st.text_input("🔑 Enter ClickUp API Key:", type="password")
+if api_key:
+    workspaces = fetch_workspaces(api_key)
+    if workspaces:
+        workspace_id = st.selectbox("🏢 Select Workspace:", options=list(workspaces.keys()), format_func=lambda x: workspaces[x])
+    else:
+        st.error("Failed to fetch workspaces. Please check your API key.")
+else:
+    workspace_id = None
+
+company_name = st.text_input("🏢 Enter Company Name (Optional):")
+use_case = st.text_area("🏢 Describe your company's use case:")
+
+if st.button("🚀 Let's Go!") and api_key and workspace_id:
+    workspace_data = None
+    with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
+        workspace_data = fetch_workspace_details(api_key, workspace_id)
+    if workspace_data is None:
+        st.error("Failed to fetch workspace data.")
+    elif "error" in workspace_data:
+        st.error(workspace_data["error"])
+    else:
+        st.subheader("📊 Workspace Summary")
+        # Display workspace data as tiles
+        cols = st.columns(4)
+        for idx, (key, value) in enumerate(workspace_data.items()):
+            with cols[idx % 4]:
+                st.metric(label=key, value=value)
+
+    # Build and display company profile if a company name is provided
+    if company_name:
+        with st.spinner("Generating company profile..."):
+            company_profile = get_company_info(company_name)
+        st.subheader("🏢 Company Profile")
+        st.markdown(company_profile, unsafe_allow_html=True)
+    else:
+        company_profile = "No company information provided."
+    
+    with st.spinner("Generating AI recommendations..."):
+        recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
+        st.markdown(recommendations, unsafe_allow_html=True)
+
+st.markdown("<div style='position: fixed; bottom: 10px; left: 7px;'>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
