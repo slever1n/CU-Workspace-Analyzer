@@ -5,6 +5,3 @@ beautifulsoup4
 aiohttp
 asyncio
 aiohttp
-streamlit
-time
-textwrap
