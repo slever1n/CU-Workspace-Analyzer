@@ -59,36 +59,47 @@ async def fetch_clickup_data(api_key, url, client):
     """
     headers = {"Authorization": api_key}
     response = await client.get(url, headers=headers)
-    return response.json() if response.status_code == 200 else {"error": response.text}
+
+    # Debugging: Print API response
+    print(f"Fetching {url}")
+    print(f"Status Code: {response.status_code}")
+    print(f"Response Text: {response.text}")
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return {"error": response.text}
+
+async def fetch_workspace_details(api_key, team_id, client):
+    """
+    Fetch workspace details such as spaces, folders, lists, and tasks.
+    """
+    url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
+    return await fetch_clickup_data(api_key, url, client)
+
 
 async def get_clickup_workspace_data(api_key):
-    """
-    Fetches real workspace data from the ClickUp API asynchronously.
-    """
     if not api_key:
-        return None
-    
+        return {"error": "API key is missing"}
+
     async with httpx.AsyncClient() as client:
         teams_response = await fetch_clickup_data(api_key, "https://api.clickup.com/api/v2/team", client)
-        
-        # Debugging: Print response
-        print("Teams Response:", teams_response)
+
+        if "error" in teams_response:
+            return teams_response
 
         teams = teams_response.get("teams", [])
         if not teams:
             return {"error": "No teams found in ClickUp workspace."}
-        
+
         team_id = teams[0].get("id")
         if not team_id:
             return {"error": "No team ID found."}
 
-        # Fetch workspace details (assuming this function exists)
-        workspace_details = await fetch_clickup_data(api_key, f"https://api.clickup.com/api/v2/team/{team_id}/space", client)
-        
-        # Debugging: Print response
-        print("Workspace Details:", workspace_details)
+        workspace_details = await fetch_workspace_details(api_key, team_id, client)
 
         return workspace_details
+
 
 
 def get_ai_recommendations(use_case, company_profile, workspace_details):
