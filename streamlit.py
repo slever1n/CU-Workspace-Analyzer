@@ -191,7 +191,7 @@ api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🏢 Describe your company's use case:")
 
-if st.button("🚀 Let's Go!"):
+if st.button("Analyze"):
     workspace_data = None
     if api_key:
         with st.spinner("Fetching workspace data..."):
