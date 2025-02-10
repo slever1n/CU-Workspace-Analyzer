@@ -191,7 +191,7 @@ api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🏢 Describe your company's use case:")
 
-if st.button("Analyze Workspace"):
+if st.button("🚀 Let's Go!"):
     workspace_data = None
     if api_key:
         with st.spinner("Fetching workspace data..."):
@@ -223,4 +223,4 @@ if st.button("Analyze Workspace"):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
-st.markdown("<div style='position: fixed; bottom: 10px; left: 10px;'>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
+st.markdown("<div style='position: fixed; bottom: 10px; left: 7px;'>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
