@@ -6,6 +6,10 @@ import time
 import openai
 import google.generativeai as genai
 import textwrap
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
@@ -71,8 +75,10 @@ async def get_clickup_workspace_data(api_key):
     async with aiohttp.ClientSession() as session:
         try:
             async with session.get(url, headers=headers) as response:
+                logging.debug(f"Response status: {response.status}")
                 if response.status == 200:
                     data = await response.json()
+                    logging.debug(f"Raw data received: {data}")
                     teams = data.get("teams", [])
                     if teams:
                         team_id = teams[0]["id"]
@@ -80,8 +86,11 @@ async def get_clickup_workspace_data(api_key):
                     else:
                         return {"error": "No teams found in ClickUp workspace."}
                 else:
-                    return {"error": f"Error: {response.status} - {await response.json()}"}
+                    error_message = await response.json()
+                    logging.error(f"Error: {response.status} - {error_message}")
+                    return {"error": f"Error: {response.status} - {error_message}"}
         except Exception as e:
+            logging.exception("Exception occurred while fetching workspace data")
             return {"error": f"Exception: {str(e)}"}
 
 async def fetch_workspace_details(api_key, team_id):
@@ -95,6 +104,7 @@ async def fetch_workspace_details(api_key, team_id):
             spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
             async with session.get(spaces_url, headers=headers) as spaces_response:
                 spaces_data = await spaces_response.json()
+                logging.debug(f"Spaces data: {spaces_data}")
                 spaces = spaces_data.get("spaces", [])
                 
                 space_count = len(spaces)
@@ -106,6 +116,7 @@ async def fetch_workspace_details(api_key, team_id):
                     folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
                     async with session.get(folders_url, headers=headers) as folders_response:
                         folders_data = await folders_response.json()
+                        logging.debug(f"Folders data for space {space_id}: {folders_data}")
                         folders = folders_data.get("folders", [])
                         folder_count += len(folders)
                         
@@ -114,6 +125,7 @@ async def fetch_workspace_details(api_key, team_id):
                             lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
                             async with session.get(lists_url, headers=headers) as lists_response:
                                 lists_data = await lists_response.json()
+                                logging.debug(f"Lists data for folder {folder_id}: {lists_data}")
                                 lists = lists_data.get("lists", [])
                                 list_count += len(lists)
                                 
@@ -122,6 +134,7 @@ async def fetch_workspace_details(api_key, team_id):
                                     tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
                                     async with session.get(tasks_url, headers=headers) as tasks_response:
                                         tasks_data = await tasks_response.json()
+                                        logging.debug(f"Tasks data for list {list_id}: {tasks_data}")
                                         tasks = tasks_data.get("tasks", [])
                                         
                                         task_count += len(tasks)
@@ -133,7 +146,7 @@ async def fetch_workspace_details(api_key, team_id):
                 
                 task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
                 
-                return {
+                workspace_summary = {
                     "📁 Spaces": space_count,
                     "📂 Folders": folder_count,
                     "🗂️ Lists": list_count,
@@ -143,7 +156,10 @@ async def fetch_workspace_details(api_key, team_id):
                     "⚠️ Overdue Tasks": overdue_tasks,
                     "🔥 High Priority Tasks": high_priority_tasks
                 }
+                logging.debug(f"Workspace Summary: {workspace_summary}")
+                return workspace_summary
         except Exception as e:
+            logging.exception("Exception occurred while fetching workspace details")
             return {"error": f"Exception: {str(e)}"}
 
 def get_ai_recommendations(use_case, company_profile, workspace_details):
