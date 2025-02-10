@@ -17,7 +17,7 @@ A Streamlit application that analyzes your ClickUp workspace, generates a compan
 - **Useful ClickUp Resources:**  
   Provides direct links to ClickUp Templates, ClickUp University, and the ClickUp Help Center.
 
-## Requirements
+##🛠️ Requirements
 
 - Python 3.7 or higher
 - [Streamlit](https://streamlit.io/)
@@ -29,7 +29,7 @@ A Streamlit application that analyzes your ClickUp workspace, generates a compan
 
 
 
-## Installation
+##⚙️ Installation
 
 1. **Clone the repository:**
 
@@ -58,7 +58,7 @@ OPENAI_API_KEY = "your_openai_api_key"
 OPENAI_ORG_ID = "your_openai_org_id"
 GEMINI_API_KEY = "your_gemini_api_key"
 ```
-## Usage/Examples
+##💡 Usage/Examples
 
 **1. Run the Application**
 
@@ -92,7 +92,7 @@ Useful ClickUp resources are linked at the bottom of the app.
 
 
 
-## Notes
+##📝 Notes
 
 **1. Workspace Analysis:**
 If no ClickUp API key is provided, the workspace analysis is skipped, but AI recommendations will still be generated based on the provided use case and company profile.
@@ -100,13 +100,13 @@ If no ClickUp API key is provided, the workspace analysis is skipped, but AI rec
 **2. AI Services:**
 The app uses the Gemini model `gemini-2.0-flash` for generating the company profile and AI recommendations. It falls back to OpenAI if Gemini is unavailable.
 
-## License
+##🪪 License
 
 This project is open source. Feel free to use, modify, and distribute it as needed.
 
 
 
-## Authors
+##👤 Authors
 
 Made by Yul
 
