@@ -1,9 +1,7 @@
 import requests
 import streamlit as st
-import time
 import openai
 import google.generativeai as genai
-from bs4 import BeautifulSoup
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analyzer", page_icon="🚀", layout="wide")
@@ -35,7 +33,7 @@ def get_clickup_workspace_data(api_key):
             teams = response.json().get("teams", [])
             if teams:
                 team_id = teams[0]["id"]
-                return fetch_workspace_details(api_key, team_id)
+                return {"Workspace ID": team_id, "Team Name": teams[0].get("name", "N/A")}
             else:
                 return {"error": "No teams found in ClickUp workspace."}
         else:
@@ -43,59 +41,39 @@ def get_clickup_workspace_data(api_key):
     except Exception as e:
         return {"error": f"Exception: {str(e)}"}
 
-def get_company_info(company_name):
-    """Fetches company profile from Google, LinkedIn, and the company website."""
-    headers = {"User-Agent": "Mozilla/5.0"}
+def get_ai_generated_company_profile(company_name):
+    """Generates a company profile using AI."""
+    if not company_name:
+        return {
+            "Description": "No company info provided.",
+            "Industry": "N/A",
+            "Size": "N/A",
+            "Website": "N/A"
+        }
     
-    def search_google():
-        """Searches Google for company info."""
-        search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
-        try:
-            response = requests.get(search_url, headers=headers)
-            soup = BeautifulSoup(response.text, "html.parser")
-            for tag in soup.find_all("span"):
-                text = tag.get_text()
-                if "is a" in text or "provides" in text or "specializes in" in text:
-                    return text
-        except Exception as e:
-            return f"Error fetching Google info: {str(e)}"
-        return None
-
-    def search_linkedin():
-        """Searches LinkedIn for company info."""
-        search_url = f"https://www.google.com/search?q=site:linkedin.com/company/{company_name.replace(' ', '-')}"
-        try:
-            response = requests.get(search_url, headers=headers)
-            soup = BeautifulSoup(response.text, "html.parser")
-            for tag in soup.find_all("cite"):
-                if "linkedin.com/company/" in tag.text:
-                    return tag.text.strip()
-        except Exception as e:
-            return f"Error fetching LinkedIn info: {str(e)}"
-        return None
-
-    def search_company_website():
-        """Attempts to find and extract company info from their website."""
-        search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+official+website"
-        try:
-            response = requests.get(search_url, headers=headers)
-            soup = BeautifulSoup(response.text, "html.parser")
-            for tag in soup.find_all("cite"):
-                if "http" in tag.text:
-                    return tag.text.strip()
-        except Exception as e:
-            return f"Error fetching company website: {str(e)}"
-        return None
-
-    google_info = search_google()
-    linkedin_profile = search_linkedin()
-    company_website = search_company_website()
-
-    return {
-        "Google Description": google_info or "Not found",
-        "LinkedIn Profile": linkedin_profile or "Not found",
-        "Company Website": company_website or "Not found"
-    }
+    prompt = f"""
+    Provide a brief profile for the company "{company_name}" including:
+    - A short description of the company.
+    - The industry it operates in.
+    - Approximate company size (small, medium, large).
+    - The official website if known.
+    """
+    
+    try:
+        if openai_api_key:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[{"role": "system", "content": "You are a business analyst."},
+                          {"role": "user", "content": prompt}]
+            )
+            content = response["choices"][0]["message"]["content"]
+            return {"Description": content}
+        elif gemini_api_key:
+            model = genai.GenerativeModel("gemini-pro")
+            response = model.generate_content(prompt)
+            return {"Description": response.text}
+    except Exception as e:
+        return {"Description": f"Error generating company profile: {str(e)}"}
 
 def get_ai_recommendations(use_case, company_info, workspace_details):
     """Generates AI-powered recommendations using OpenAI or Gemini."""
@@ -103,9 +81,7 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
     **📌 Use Case:** {use_case}
     
     **🏢 Company Profile:**
-    - **Google Description:** {company_info['Google Description']}
-    - **LinkedIn Profile:** {company_info['LinkedIn Profile']}
-    - **Company Website:** {company_info['Company Website']}
+    - **Description:** {company_info['Description']}
     
     ### 🔍 Workspace Overview:
     {workspace_details if workspace_details else "(No workspace details available)"}
@@ -132,12 +108,12 @@ def get_ai_recommendations(use_case, company_info, workspace_details):
                           {"role": "user", "content": prompt}]
             )
             return response["choices"][0]["message"]["content"]
-    except Exception as e:
-        if gemini_api_key:
+        elif gemini_api_key:
             model = genai.GenerativeModel("gemini-pro")
             response = model.generate_content(prompt)
             return response.text
-    return "⚠️ AI recommendations are not available because both OpenAI and Gemini failed."
+    except Exception as e:
+        return f"⚠️ AI recommendations not available due to: {str(e)}"
 
 # UI Setup
 st.title("📊 ClickUp Workspace Analyzer")
@@ -153,29 +129,19 @@ if st.button("🚀 Analyze Workspace"):
         with st.spinner("🔄 Fetching ClickUp Workspace Data..."):
             workspace_details = get_clickup_workspace_data(clickup_api_key) if clickup_api_key else None
         
-        with st.spinner("🌍 Searching for company information..."):
-            company_info = get_company_info(company_name) if company_name else {
-                "Google Description": "No company info provided.",
-                "LinkedIn Profile": "No company info provided.",
-                "Company Website": "No company info provided."
-            }
-
+        with st.spinner("🤖 Generating AI Company Profile..."):
+            company_info = get_ai_generated_company_profile(company_name)
+        
         if workspace_details and "error" in workspace_details:
             st.error(f"❌ {workspace_details['error']}")
         elif workspace_details:
             st.subheader("📝 Workspace Analysis:")
-            cols = st.columns(4)
-            keys = list(workspace_details.keys())
-            for i, key in enumerate(keys):
-                with cols[i % 4]:
-                    st.metric(label=key, value=workspace_details[key])
-
+            st.json(workspace_details)
+        
         # Display Company Info
-        st.subheader("🏢 Company Information:")
-        st.markdown(f"**Google Description:** {company_info['Google Description']}")
-        st.markdown(f"**LinkedIn Profile:** [{company_info['LinkedIn Profile']}]({company_info['LinkedIn Profile']})")
-        st.markdown(f"**Company Website:** [{company_info['Company Website']}]({company_info['Company Website']})")
-
+        st.subheader("🏢 Company Profile:")
+        st.markdown(f"**Description:** {company_info['Description']}")
+        
         with st.spinner("🤖 Generating AI recommendations..."):
             ai_recommendations = get_ai_recommendations(use_case, company_info, workspace_details)
         
