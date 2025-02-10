@@ -151,17 +151,17 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
         
         Please provide a detailed analysis.
         
-        <h2>Productivity Analysis</h2>
+        <h3>📈 Productivity Analysis</h3>
         Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
         
-        <h2>Actionable Recommendations</h2>
+        <h3>✅ Actionable Recommendations</h3>
         Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations from the company profile.
         
-        <h2>Best Practices & Tips</h2>
+        <h3>🏆 Best Practices & Tips</h3>
         Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
         
-        <h2>Useful ClickUp Templates & Resources</h2>
-        Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
+        <h3>🛠️ Useful ClickUp Templates & Resources</h3>
+        Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com. Provide 5-8 links.
     """)
     
     try:
@@ -188,8 +188,8 @@ st.title("🚀 ClickUp Workspace Analyzer")
 
 # Input fields available immediately
 api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password")
-use_case = st.text_area("🏢 Describe your company's use case:")
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
+use_case = st.text_area("🏢 Describe your company's use case:")
 
 if st.button("Analyze Workspace"):
     workspace_data = None
@@ -223,8 +223,4 @@ if st.button("Analyze Workspace"):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
-st.markdown("### 🛠️ Useful ClickUp Templates & Resources:")
-st.markdown("- [ClickUp Templates](https://clickup.com/templates)")
-st.markdown("- [ClickUp University](https://university.clickup.com)")
-st.markdown("- [ClickUp Help Center](https://help.clickup.com)")
 st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
