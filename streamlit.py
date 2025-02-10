@@ -212,14 +212,14 @@ if st.button("🚀 Let's Go!"):
 
     # Build and display company profile if a company name is provided
     if company_name:
-        with st.spinner("Generating company profile..."):
+        with st.spinner("Generating company profile, sit tight..."):
             company_profile = get_company_info(company_name)
         st.subheader("🏢 Company Profile")
         st.markdown(company_profile, unsafe_allow_html=True)
     else:
         company_profile = "No company information provided."
     
-    with st.spinner("Generating AI recommendations..."):
+    with st.spinner("Generating AI recommendations, sit tight..."):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
