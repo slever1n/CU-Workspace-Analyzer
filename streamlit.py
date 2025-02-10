@@ -67,13 +67,29 @@ async def get_clickup_workspace_data(api_key):
     """
     if not api_key:
         return None
+    
     async with httpx.AsyncClient() as client:
         teams_response = await fetch_clickup_data(api_key, "https://api.clickup.com/api/v2/team", client)
+        
+        # Debugging: Print response
+        print("Teams Response:", teams_response)
+
         teams = teams_response.get("teams", [])
         if not teams:
             return {"error": "No teams found in ClickUp workspace."}
-        team_id = teams[0]["id"]
-        return await fetch_workspace_details(api_key, team_id, client)
+        
+        team_id = teams[0].get("id")
+        if not team_id:
+            return {"error": "No team ID found."}
+
+        # Fetch workspace details (assuming this function exists)
+        workspace_details = await fetch_clickup_data(api_key, f"https://api.clickup.com/api/v2/team/{team_id}/space", client)
+        
+        # Debugging: Print response
+        print("Workspace Details:", workspace_details)
+
+        return workspace_details
+
 
 def get_ai_recommendations(use_case, company_profile, workspace_details):
     """
