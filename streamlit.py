@@ -135,16 +135,19 @@ use_case = st.text_input("📌 Use Case (e.g., Consulting, Sales)")
 if option == "Enter ClickUp API Key":
     clickup_api_key = st.text_input("🔑 ClickUp API Key", type="password")
     if st.button("🚀 Analyze"):
-        workspace_details = get_clickup_workspace_data(clickup_api_key)
-        company_profile = "(Workspace analysis only)"
-        ai_recommendations = get_ai_recommendations(use_case, company_profile, workspace_details)
+        with st.spinner("Analyzing ClickUp workspace... ⏳"):
+            workspace_details = get_clickup_workspace_data(clickup_api_key)
+        st.subheader("📊 Workspace Analysis:")
+        st.json(workspace_details)
+        ai_recommendations = get_ai_recommendations(use_case, "(Workspace analysis only)", workspace_details)
         st.subheader("📌 AI Recommendations:")
         st.markdown(ai_recommendations, unsafe_allow_html=True)
 
 elif option == "Enter Company Name":
     company_name = st.text_input("🏢 Company Name")
     if st.button("🚀 Analyze"):
-        company_profile = get_company_info(company_name, use_case)
+        with st.spinner("Generating company profile... ⏳"):
+            company_profile = get_company_info(company_name, use_case)
         ai_recommendations = get_ai_recommendations(use_case, company_profile, "No workspace details available")
         st.subheader("📌 AI Recommendations:")
         st.markdown(ai_recommendations, unsafe_allow_html=True)
