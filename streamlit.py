@@ -115,7 +115,7 @@ def fetch_workspace_details(api_key, team_id):
         task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
         
         return {
-            "📁 Spaces": space_count,
+            "🪐 Spaces": space_count,
             "📂 Folders": folder_count,
             "🗂️ Lists": list_count,
             "📝 Total Tasks": task_count,
@@ -276,18 +276,18 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
 st.title("🚀 ClickUp Workspace Analysis")
 
 # Input fields available immediately
-api_key = st.text_input("🔑 Enter ClickUp API Key:", type="password")
+api_key = st.text_input("🔑 Enter ClickUp API Key: (Optional)", type="password")
 if api_key:
     workspaces = fetch_workspaces(api_key)
     if workspaces:
-        workspace_id = st.selectbox("🏢 Select Workspace:", options=list(workspaces.keys()), format_func=lambda x: workspaces[x])
+        workspace_id = st.selectbox("💼 Select Workspace:", options=list(workspaces.keys()), format_func=lambda x: workspaces[x])
     else:
         st.error("Failed to fetch workspaces. Please check your API key.")
 else:
     workspace_id = None
 
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
-use_case = st.text_area("🏢 Describe your company's use case:")
+use_case = st.text_area("🧑‍💻 Describe your company's use case:")
 
 if st.button("🚀 Let's Go!"):
     if api_key and workspace_id:
