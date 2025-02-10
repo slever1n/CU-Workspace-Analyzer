@@ -218,6 +218,8 @@ def fetch_list_details(api_key, list_id):
         completed_tasks += 1 if status_type in ["closed", "done"] else 0
         overdue_tasks += 1 if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000) else 0
         high_priority_tasks += 1 if task.get("priority", "") in ["urgent", "high"] else 0
+
+    logging.info(f"Total tasks: {task_count}, Completed tasks: {completed_tasks}")
     
     return {
         'task_count': task_count,
