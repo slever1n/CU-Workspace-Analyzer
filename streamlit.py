@@ -291,7 +291,7 @@ else:
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🏢 Describe your company's use case:")
 
-if st.button("🚀 Let's Go!") and api_key and workspace_id:
+if st.button("🚀 Let's Go!") and api_key and workspace_id or company_name and use_case:
     workspace_data = None
     with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
         workspace_data = fetch_workspace_details(api_key, workspace_id)
