@@ -1,14 +1,9 @@
 
-# ClickUp Workspace Analyzer    
-
-Analyzes your ClickUp workspace with the help of AI
-
-
-# ClickUp Workspace Analyzer
+# 📊 ClickUp Workspace Analyzer    
 
 A Streamlit application that analyzes your ClickUp workspace, generates a company profile using AI, and provides tailored recommendations to improve productivity and organization based on your workspace data, your company's use case, and the generated company profile.
 
-## Features
+## ⭐ Features
 
 - **Workspace Analysis:**  
   Fetches and displays metrics (e.g., Spaces, Folders, Lists, Total Tasks, Completed Tasks, Task Completion Rate, Overdue Tasks, High Priority Tasks) from your ClickUp workspace using the ClickUp API.
