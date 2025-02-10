@@ -48,7 +48,7 @@ def get_company_info(company_name):
             return response.text
         elif openai_api_key:
             response = openai.ChatCompletion.create(
-                model="gpt-4o",
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": prompt}
@@ -167,7 +167,7 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
     try:
         if openai_api_key:
             response = openai.ChatCompletion.create(
-                model="gpt-4o",
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": prompt}
@@ -188,10 +188,9 @@ st.title("🚀 ClickUp Workspace Analysis")
 
 # Input fields available immediately
 api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password")
-st.text("OR")
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
-st.text("AND")
 use_case = st.text_area("🏢 Describe your company's use case:")
+
 if st.button("🚀 Let's Go!"):
     workspace_data = None
     if api_key:
