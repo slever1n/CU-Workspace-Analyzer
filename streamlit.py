@@ -21,73 +21,6 @@ if openai_api_key:
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
-# ----------------------- #
-# Theme Toggle (Light/Dark)
-# ----------------------- #
-theme = st.sidebar.radio("Select Theme", ["Light", "Dark"])
-
-# Use a CSS block to override the styling of the entire app,
-# including input fields and text boxes.
-if theme == "Dark":
-    st.markdown("""
-        <style>
-        .stApp {
-            background-color: #0E1117 !important;
-            color: white !important;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            color: white !important;
-        }
-        /* Override input and textarea styles */
-        input, textarea {
-            background-color: #333 !important;
-            color: white !important;
-            border: 1px solid #555 !important;
-        }
-        /* Additional classes used by Streamlit for inputs */
-        .stTextInput input, .stTextArea textarea {
-            background-color: #333 !important;
-            color: white !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-        <style>
-        .stApp {
-            background-color: white !important;
-            color: black !important;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            color: black !important;
-        }
-        input, textarea {
-            background-color: white !important;
-            color: black !important;
-            border: 1px solid #ccc !important;
-        }
-        .stTextInput input, .stTextArea textarea {
-            background-color: white !important;
-            color: black !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-# Additional CSS to enlarge headings in AI recommendations output
-st.markdown("""
-    <style>
-    h2 {
-      font-size: 2em !important;
-    }
-    h3 {
-      font-size: 1.75em !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-# ----------------------- #
-# Function Definitions
-# ----------------------- #
 def get_company_info(company_name):
     """
     Generates a short company profile for the given company name using Gemini (or OpenAI if Gemini is unavailable).
@@ -218,16 +151,16 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
         
         Please provide a detailed analysis.
         
-        <h2>Productivity Analysis</h2>
+        ## 📈 Productivity Analysis:
         Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
         
-        <h2>Actionable Recommendations</h2>
+        ## ✅ Actionable Recommendations:
         Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations from the company profile.
         
-        <h2>Best Practices & Tips</h2>
+        ## 🏆 Best Practices & Tips:
         Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
         
-        <h2>Useful ClickUp Templates & Resources</h2>
+        ## 🛠️ Useful ClickUp Templates & Resources:
         Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
     """)
     
@@ -248,9 +181,7 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
             return response.text
     return "⚠️ AI recommendations are not available because both AI services failed."
 
-# ----------------------- #
 # Streamlit UI
-# ----------------------- #
 st.title("🚀 ClickUp Workspace Analyzer")
 
 # Input fields available immediately
@@ -282,7 +213,7 @@ if st.button("Analyze Workspace"):
         with st.spinner("Generating company profile..."):
             company_profile = get_company_info(company_name)
         st.subheader("🏢 Company Profile")
-        st.markdown(company_profile, unsafe_allow_html=True)
+        st.markdown(company_profile)
     else:
         company_profile = "No company information provided."
     
@@ -290,10 +221,7 @@ if st.button("Analyze Workspace"):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
-# Section with useful hyperlinks to ClickUp resources and templates
-st.markdown("### 🛠️ Useful ClickUp Templates & Resources:")
-st.markdown("- [ClickUp Templates](https://clickup.com/templates)")
-st.markdown("- [ClickUp University](https://university.clickup.com)")
-st.markdown("- [ClickUp Help Center](https://help.clickup.com)")
 
-st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
+
+
+st.markdown("<div style='position: fixed; bottom: 10px; left: 10px;'>a little tool made by: Yul☺️</div>", unsafe_allow_html=True)
