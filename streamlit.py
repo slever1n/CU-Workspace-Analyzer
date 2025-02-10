@@ -7,8 +7,13 @@ import textwrap
 import concurrent.futures
 import logging
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+# Set up logging to output to both console and a file
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    handlers=[
+                        logging.FileHandler("debug.log"),
+                        logging.StreamHandler()
+                    ])
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
@@ -99,7 +104,7 @@ def fetch_workspace_details(api_key, team_id):
         
         space_count = len(spaces)
         folder_count, list_count, task_count = 0, 0, 0
-        completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+        overdue_tasks, high_priority_tasks = 0, 0
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future_to_space = {executor.submit(fetch_space_details, api_key, space["id"]): space for space in spaces}
@@ -108,19 +113,14 @@ def fetch_workspace_details(api_key, team_id):
                 folder_count += space_result['folder_count']
                 list_count += space_result['list_count']
                 task_count += space_result['task_count']
-                completed_tasks += space_result['completed_tasks']
                 overdue_tasks += space_result['overdue_tasks']
                 high_priority_tasks += space_result['high_priority_tasks']
-        
-        task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
         
         return {
             "📁 Spaces": space_count,
             "📂 Folders": folder_count,
             "🗂️ Lists": list_count,
             "📝 Total Tasks": task_count,
-            "✅ Completed Tasks": completed_tasks,
-            "📈 Task Completion Rate": f"{round(task_completion_rate, 2)}%",
             "⚠️ Overdue Tasks": overdue_tasks,
             "🔥 High Priority Tasks": high_priority_tasks
         }
@@ -133,7 +133,7 @@ def fetch_space_details(api_key, space_id):
     """
     headers = {"Authorization": api_key}
     folder_count, list_count, task_count = 0, 0, 0
-    completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+    overdue_tasks, high_priority_tasks = 0, 0
 
     folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
     start_time = time.time()
@@ -148,7 +148,6 @@ def fetch_space_details(api_key, space_id):
             folder_result = future.result()
             list_count += folder_result['list_count']
             task_count += folder_result['task_count']
-            completed_tasks += folder_result['completed_tasks']
             overdue_tasks += folder_result['overdue_tasks']
             high_priority_tasks += folder_result['high_priority_tasks']
     
@@ -156,7 +155,6 @@ def fetch_space_details(api_key, space_id):
         'folder_count': folder_count,
         'list_count': list_count,
         'task_count': task_count,
-        'completed_tasks': completed_tasks,
         'overdue_tasks': overdue_tasks,
         'high_priority_tasks': high_priority_tasks
     }
@@ -167,7 +165,7 @@ def fetch_folder_details(api_key, folder_id):
     """
     headers = {"Authorization": api_key}
     list_count, task_count = 0, 0
-    completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+    overdue_tasks, high_priority_tasks = 0, 0
 
     lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
     start_time = time.time()
@@ -181,14 +179,12 @@ def fetch_folder_details(api_key, folder_id):
         for future in concurrent.futures.as_completed(future_to_list):
             list_result = future.result()
             task_count += list_result['task_count']
-            completed_tasks += list_result['completed_tasks']
             overdue_tasks += list_result['overdue_tasks']
             high_priority_tasks += list_result['high_priority_tasks']
     
     return {
         'list_count': list_count,
         'task_count': task_count,
-        'completed_tasks': completed_tasks,
         'overdue_tasks': overdue_tasks,
         'high_priority_tasks': high_priority_tasks
     }
@@ -199,7 +195,7 @@ def fetch_list_details(api_key, list_id):
     """
     headers = {"Authorization": api_key}
     task_count = 0
-    completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+    overdue_tasks, high_priority_tasks = 0, 0
 
     tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
     start_time = time.time()
@@ -211,19 +207,15 @@ def fetch_list_details(api_key, list_id):
     logging.info(f"API call to {tasks_url} took {time.time() - start_time:.2f} seconds")
     tasks = tasks_response.get("tasks", [])
     task_count += len(tasks)
-    
-    for task in tasks:
-        status = task.get("status", {}).get("status", "").lower()
-        logging.info(f"Task ID: {task['id']} - Status: {status}")
-        completed_tasks += 1 if status in ["closed", "done", "completed"] else 0
-        overdue_tasks += 1 if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000) else 0
-        high_priority_tasks += 1 if task.get("priority", "") in ["urgent", "high"] else 0
 
-    logging.info(f"Total tasks: {task_count}, Completed tasks: {completed_tasks}")
+    # Count overdue and high priority tasks
+    overdue_tasks = sum(1 for task in tasks if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
+    high_priority_tasks = sum(1 for task in tasks if task.get("priority", "").lower() in ["urgent", "high"])
+
+    logging.info(f"Total tasks: {task_count}, Overdue tasks: {overdue_tasks}, High priority tasks: {high_priority_tasks}")
     
     return {
         'task_count': task_count,
-        'completed_tasks': completed_tasks,
         'overdue_tasks': overdue_tasks,
         'high_priority_tasks': high_priority_tasks
     }
