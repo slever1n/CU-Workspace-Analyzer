@@ -292,7 +292,7 @@ use_case = st.text_area("🏢 Describe your company's use case:")
 if st.button("🚀 Let's Go!"):
     if api_key and workspace_id:
         workspace_data = None
-        with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
+        with st.spinner("Fetching workspace data, may take longer for larger Workspaces..."):
             workspace_data = fetch_workspace_details(api_key, workspace_id)
         if workspace_data is None:
             st.error("Failed to fetch workspace data.")
