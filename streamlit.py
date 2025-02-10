@@ -39,7 +39,7 @@ def get_clickup_workspace_data(api_key):
             else:
                 return {"error": "No teams found in ClickUp workspace."}
         else:
-            return {"error": f"Error: {response.status_code} - {response.json()}"} 
+            return {"error": f"Error: {response.status_code} - {response.json()}"}
     except Exception as e:
         return {"error": f"Exception: {str(e)}"}
 
@@ -102,18 +102,22 @@ def fetch_workspace_details(api_key, team_id):
 def get_ai_recommendations(use_case, company_info, workspace_details):
     """Generates AI-powered recommendations using OpenAI or Gemini."""
     prompt = f"""
-    ### 📈 Productivity Analysis:
-    Provide insights on how to optimize productivity for this company and use case.
-    
-    ### ✅ Actionable Recommendations:
-    Suggest practical steps to improve efficiency and organization based on company profile.
-    
-    ### 🏆 Best Practices & Tips:
-    Share industry-specific best practices to maximize workflow efficiency.
-    
-    ### 🛠️ Useful ClickUp Templates & Resources:
-    List relevant ClickUp templates and best practices for this use case.
-    Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
+Based on the following workspace data:
+{workspace_details if workspace_details else "(No workspace data available)"}
+
+And considering the company's use case: "{use_case}", please provide a detailed analysis.
+
+### 📈 Productivity Analysis:
+Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
+
+### ✅ Actionable Recommendations:
+Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case.
+
+### 🏆 Best Practices & Tips:
+Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
+
+### 🛠️ Useful ClickUp Templates & Resources:
+Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
     """
 
     try:
@@ -164,6 +168,10 @@ if st.button("Analyze Workspace"):
         recommendations = get_ai_recommendations(use_case, company_name, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
-# Section with useful hyperlinks to ClickUp resources and template
+# Section with useful hyperlinks to ClickUp resources and templates
+st.markdown("### 🛠️ Useful ClickUp Templates & Resources:")
+st.markdown("- [ClickUp Templates](https://clickup.com/templates)")
+st.markdown("- [ClickUp University](https://university.clickup.com)")
+st.markdown("- [ClickUp Help Center](https://help.clickup.com)")
 
 st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
