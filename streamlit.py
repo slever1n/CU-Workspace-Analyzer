@@ -5,6 +5,10 @@ import openai
 import google.generativeai as genai
 import textwrap
 import concurrent.futures
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
@@ -68,7 +72,9 @@ def fetch_workspace_data(api_key):
     headers = {"Authorization": api_key}
 
     try:
+        start_time = time.time()
         response = requests.get(url, headers=headers)
+        logging.info(f"API call to {url} took {time.time() - start_time:.2f} seconds")
         if response.status_code == 200:
             teams = response.json().get("teams", [])
             if teams:
@@ -89,7 +95,9 @@ def fetch_workspace_details(api_key, team_id):
     
     try:
         spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
+        start_time = time.time()
         spaces_response = requests.get(spaces_url, headers=headers).json()
+        logging.info(f"API call to {spaces_url} took {time.time() - start_time:.2f} seconds")
         spaces = spaces_response.get("spaces", [])
         
         space_count = len(spaces)
@@ -131,7 +139,9 @@ def fetch_space_details(api_key, space_id):
     completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
 
     folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
+    start_time = time.time()
     folders_response = requests.get(folders_url, headers=headers).json()
+    logging.info(f"API call to {folders_url} took {time.time() - start_time:.2f} seconds")
     folders = folders_response.get("folders", [])
     folder_count += len(folders)
     
@@ -163,7 +173,9 @@ def fetch_folder_details(api_key, folder_id):
     completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
 
     lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
+    start_time = time.time()
     lists_response = requests.get(lists_url, headers=headers).json()
+    logging.info(f"API call to {lists_url} took {time.time() - start_time:.2f} seconds")
     lists = lists_response.get("lists", [])
     list_count += len(lists)
     
@@ -193,7 +205,9 @@ def fetch_list_details(api_key, list_id):
     completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
 
     tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
+    start_time = time.time()
     tasks_response = requests.get(tasks_url, headers=headers).json()
+    logging.info(f"API call to {tasks_url} took {time.time() - start_time:.2f} seconds")
     tasks = tasks_response.get("tasks", [])
     task_count += len(tasks)
     completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
