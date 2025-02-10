@@ -1,5 +1,3 @@
-
-
 import requests
 import streamlit as st
 import time
@@ -213,7 +211,7 @@ def fetch_list_details(api_key, list_id):
     task_count += len(tasks)
     
     for task in tasks:
-        status = task.get("status", {}).get("ype", "").lower()
+        status = task.get("status", {}).get("type", "").lower()
         logging.info(f"Task ID: {task['id']} - Status: {status}")
         completed_tasks += 1 if status in ["closed", "done", "completed"] else 0
         overdue_tasks += 1 if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000) else 0
@@ -291,21 +289,24 @@ else:
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🏢 Describe your company's use case:")
 
-if st.button("🚀 Let's Go!") and api_key and workspace_id or company_name and use_case:
-    workspace_data = None
-    with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
-        workspace_data = fetch_workspace_details(api_key, workspace_id)
-    if workspace_data is None:
-        st.error("Failed to fetch workspace data.")
-    elif "error" in workspace_data:
-        st.error(workspace_data["error"])
+if st.button("🚀 Let's Go!"):
+    if api_key and workspace_id:
+        workspace_data = None
+        with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
+            workspace_data = fetch_workspace_details(api_key, workspace_id)
+        if workspace_data is None:
+            st.error("Failed to fetch workspace data.")
+        elif "error" in workspace_data:
+            st.error(workspace_data["error"])
+        else:
+            st.subheader("📊 Workspace Summary")
+            # Display workspace data as tiles
+            cols = st.columns(4)
+            for idx, (key, value) in enumerate(workspace_data.items()):
+                with cols[idx % 4]:
+                    st.metric(label=key, value=value)
     else:
-        st.subheader("📊 Workspace Summary")
-        # Display workspace data as tiles
-        cols = st.columns(4)
-        for idx, (key, value) in enumerate(workspace_data.items()):
-            with cols[idx % 4]:
-                st.metric(label=key, value=value)
+        workspace_data = None
 
     # Build and display company profile if a company name is provided
     if company_name:
