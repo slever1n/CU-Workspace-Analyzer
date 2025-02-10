@@ -21,6 +21,26 @@ if openai_api_key:
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
+def get_company_info(company_name):
+    """Fetches basic company information from the web by searching about the company."""
+    if not company_name:
+        return "No company information provided."
+    search_url = f"https://www.google.com/search?q={company_name.replace(' ', '+')}+company+profile"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    try:
+        response = requests.get(search_url, headers=headers)
+        soup = BeautifulSoup(response.text, "html.parser")
+        description = ""
+        # Attempt to extract a descriptive snippet from the search results.
+        for tag in soup.find_all("span"):
+            text = tag.get_text()
+            if "is a" in text or "provides" in text or "specializes in" in text:
+                description = text
+                break
+        return description if description else "No detailed company info found."
+    except Exception as e:
+        return f"Error fetching company details: {str(e)}"
+
 def get_clickup_workspace_data(api_key):
     """Fetches real workspace data from ClickUp API."""
     if not api_key:
@@ -99,19 +119,23 @@ def fetch_workspace_details(api_key, team_id):
     except Exception as e:
         return {"error": f"Exception: {str(e)}"}
 
-def get_ai_recommendations(use_case, company_info, workspace_details):
+def get_ai_recommendations(use_case, company_profile, workspace_details):
     """Generates AI-powered recommendations using OpenAI or Gemini."""
     prompt = f"""
 Based on the following workspace data:
 {workspace_details if workspace_details else "(No workspace data available)"}
 
-And considering the company's use case: "{use_case}", please provide a detailed analysis.
+Considering the company's use case: "{use_case}"
+And the following company profile:
+"{company_profile}"
+
+Please provide a detailed analysis.
 
 ### 📈 Productivity Analysis:
 Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
 
 ### ✅ Actionable Recommendations:
-Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case.
+Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations from the company profile.
 
 ### 🏆 Best Practices & Tips:
 Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
@@ -156,7 +180,7 @@ if st.button("Analyze Workspace"):
             st.error(workspace_data["error"])
         else:
             st.subheader("📊 Workspace Summary")
-            # Create tiles for each workspace metric
+            # Display workspace data as tiles
             cols = st.columns(4)
             for idx, (key, value) in enumerate(workspace_data.items()):
                 with cols[idx % 4]:
@@ -164,8 +188,15 @@ if st.button("Analyze Workspace"):
     else:
         st.info("ClickUp API Key not provided. Skipping workspace data analysis.")
 
+    # Build company profile if company name is provided
+    if company_name:
+        with st.spinner("Fetching company profile..."):
+            company_profile = get_company_info(company_name)
+    else:
+        company_profile = "No company information provided."
+
     with st.spinner("Generating AI recommendations..."):
-        recommendations = get_ai_recommendations(use_case, company_name, workspace_data)
+        recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
 # Section with useful hyperlinks to ClickUp resources and templates
