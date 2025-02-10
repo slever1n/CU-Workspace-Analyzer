@@ -4,3 +4,7 @@ google-generativeai
 beautifulsoup4
 aiohttp
 asyncio
+aiohttp
+streamlit as st
+time
+textwrap
