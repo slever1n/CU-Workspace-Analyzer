@@ -7,13 +7,8 @@ import textwrap
 import concurrent.futures
 import logging
 
-# Set up logging to output to both console and a file
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    handlers=[
-                        logging.FileHandler("debug.log"),
-                        logging.StreamHandler()
-                    ])
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
