@@ -26,15 +26,28 @@ if gemini_api_key:
 # ----------------------- #
 theme = st.sidebar.radio("Select Theme", ["Light", "Dark"])
 
+# Use a CSS block to override the styling of the entire app,
+# including input fields and text boxes.
 if theme == "Dark":
     st.markdown("""
         <style>
         .stApp {
-            background-color: #0E1117;
-            color: white;
+            background-color: #0E1117 !important;
+            color: white !important;
         }
         h1, h2, h3, h4, h5, h6 {
-            color: white;
+            color: white !important;
+        }
+        /* Override input and textarea styles */
+        input, textarea {
+            background-color: #333 !important;
+            color: white !important;
+            border: 1px solid #555 !important;
+        }
+        /* Additional classes used by Streamlit for inputs */
+        .stTextInput input, .stTextArea textarea {
+            background-color: #333 !important;
+            color: white !important;
         }
         </style>
     """, unsafe_allow_html=True)
@@ -42,11 +55,20 @@ else:
     st.markdown("""
         <style>
         .stApp {
-            background-color: white;
-            color: black;
+            background-color: white !important;
+            color: black !important;
         }
         h1, h2, h3, h4, h5, h6 {
-            color: black;
+            color: black !important;
+        }
+        input, textarea {
+            background-color: white !important;
+            color: black !important;
+            border: 1px solid #ccc !important;
+        }
+        .stTextInput input, .stTextArea textarea {
+            background-color: white !important;
+            color: black !important;
         }
         </style>
     """, unsafe_allow_html=True)
