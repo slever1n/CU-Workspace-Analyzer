@@ -1,6 +1,8 @@
 import asyncio
 import requests
 import streamlit as st
+import openai
+import google.generativeai as genai
 import threading
 import queue
 import time  # Import time for sleep
@@ -14,8 +16,8 @@ openai_org_id = st.secrets.get("OPENAI_ORG_ID")
 gemini_api_key = st.secrets.get("GEMINI_API_KEY")
 
 # Configure OpenAI and Gemini if API keys are available
-# Configure OpenAI and Gemini if API keys are available
 if openai_api_key:
+    openai.organization = openai_org_id
     openai.api_key = openai_api_key
 
 if gemini_api_key:
