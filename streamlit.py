@@ -6,7 +6,7 @@ import google.generativeai as genai
 import textwrap
 
 # Set page title and icon
-st.set_page_config(page_title="ClickUp Workspace Analyzer", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
 
 # Retrieve API keys from Streamlit secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
@@ -184,7 +184,7 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
 # ----------------------- #
 # Streamlit UI
 # ----------------------- #
-st.title("🚀 ClickUp Workspace Analyzer")
+st.title("🚀 ClickUp Workspace Analysis")
 
 # Input fields available immediately
 api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password")
