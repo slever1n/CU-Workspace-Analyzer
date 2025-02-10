@@ -58,17 +58,30 @@ def get_company_info(company_name):
     except Exception as e:
         return f"Error fetching company details: {str(e)}"
 
-async def fetch_clickup_data(api_key, url):
+async def fetch_clickup_data(api_key, url, client):
     """
-    Asynchronously fetch data from the ClickUp API.
+    Asynchronously fetch data from the ClickUp API using an existing client.
     """
-    async with httpx.AsyncClient() as client:
-        headers = {"Authorization": api_key}
-        response = await client.get(url, headers=headers)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return {"error": f"Error: {response.status_code} - {response.text}"}
+    headers = {"Authorization": api_key}
+    response = await client.get(url, headers=headers)
+    return response.json() if response.status_code == 200 else {"error": response.text}
+
+async def fetch_paginated_data(api_key, url, client):
+    """
+    Fetch data from ClickUp API with pagination support.
+    """
+    all_data = []
+    page = 0
+    while True:
+        response = await fetch_clickup_data(api_key, f"{url}?page={page}", client)
+        if "error" in response:
+            break
+        items = response.get("items", response.get("tasks", response.get("spaces", [])))
+        if not items:
+            break
+        all_data.extend(items)
+        page += 1
+    return all_data
 
 async def get_clickup_workspace_data(api_key):
     """
@@ -76,62 +89,47 @@ async def get_clickup_workspace_data(api_key):
     """
     if not api_key:
         return None
-
-    url = "https://api.clickup.com/api/v2/team"
-    teams_response = await fetch_clickup_data(api_key, url)
-    teams = teams_response.get("teams", [])
-    if teams:
+    async with httpx.AsyncClient() as client:
+        teams_response = await fetch_clickup_data(api_key, "https://api.clickup.com/api/v2/team", client)
+        teams = teams_response.get("teams", [])
+        if not teams:
+            return {"error": "No teams found in ClickUp workspace."}
         team_id = teams[0]["id"]
-        return await fetch_workspace_details(api_key, team_id)
-    else:
-        return {"error": "No teams found in ClickUp workspace."}
+        return await fetch_workspace_details(api_key, team_id, client)
 
-async def fetch_workspace_details(api_key, team_id):
+async def fetch_workspace_details(api_key, team_id, client):
     """
-    Fetches workspace details including spaces, folders, lists, and tasks asynchronously.
+    Fetches workspace details including spaces, folders, lists, and tasks asynchronously using parallel requests.
     """
-    spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
-    spaces_response = await fetch_clickup_data(api_key, spaces_url)
-    spaces = spaces_response.get("spaces", [])
+    # Fetch spaces
+    spaces = await fetch_paginated_data(api_key, f"https://api.clickup.com/api/v2/team/{team_id}/space", client)
     
-    space_count = len(spaces)
-    folder_count, list_count, task_count = 0, 0, 0
-    completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+    # Fetch folders from all spaces in parallel
+    folder_tasks = [fetch_paginated_data(api_key, f"https://api.clickup.com/api/v2/space/{space['id']}/folder", client) for space in spaces]
+    folders = await asyncio.gather(*folder_tasks)
+    folders = [folder for sublist in folders for folder in sublist]
     
-    for space in spaces:
-        space_id = space["id"]
-        folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
-        folders_response = await fetch_clickup_data(api_key, folders_url)
-        folders = folders_response.get("folders", [])
-        folder_count += len(folders)
-        
-        for folder in folders:
-            folder_id = folder["id"]
-            lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
-            lists_response = await fetch_clickup_data(api_key, lists_url)
-            lists = lists_response.get("lists", [])
-            list_count += len(lists)
-            
-            for lst in lists:
-                list_id = lst["id"]
-                tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
-                tasks_response = await fetch_clickup_data(api_key, tasks_url)
-                tasks = tasks_response.get("tasks", [])
-                
-                task_count += len(tasks)
-                completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
-                overdue_tasks += sum(1 for task in tasks 
-                                     if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
-                high_priority_tasks += sum(1 for task in tasks 
-                                           if task.get("priority", "") in ["urgent", "high"])
+    # Fetch lists from all folders in parallel
+    list_tasks = [fetch_paginated_data(api_key, f"https://api.clickup.com/api/v2/folder/{folder['id']}/list", client) for folder in folders]
+    lists = await asyncio.gather(*list_tasks)
+    lists = [lst for sublist in lists for lst in sublist]
     
-    task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
+    # Fetch tasks from all lists in parallel
+    task_tasks = [fetch_paginated_data(api_key, f"https://api.clickup.com/api/v2/list/{lst['id']}/task", client) for lst in lists]
+    tasks = await asyncio.gather(*task_tasks)
+    tasks = [task for sublist in tasks for task in sublist]
+    
+    # Calculate additional metrics
+    completed_tasks = sum(1 for task in tasks if task.get("status", "") == "complete")
+    overdue_tasks = sum(1 for task in tasks if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
+    high_priority_tasks = sum(1 for task in tasks if task.get("priority", "") in ["urgent", "high"])
+    task_completion_rate = (completed_tasks / len(tasks) * 100) if tasks else 0
     
     return {
-        "📁 Spaces": space_count,
-        "📂 Folders": folder_count,
-        "🗂️ Lists": list_count,
-        "📝 Total Tasks": task_count,
+        "📁 Spaces": len(spaces),
+        "📂 Folders": len(folders),
+        "🗂️ Lists": len(lists),
+        "📝 Total Tasks": len(tasks),
         "✅ Completed Tasks": completed_tasks,
         "📈 Task Completion Rate": f"{round(task_completion_rate, 2)}%",
         "⚠️ Overdue Tasks": overdue_tasks,
@@ -175,19 +173,17 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
                 ]
             )
             return response["choices"][0]["message"]["content"]
-    except Exception as e:
-        if gemini_api_key:
+        elif gemini_api_key:
             model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(prompt)
             return response.text
-    return "⚠️ AI recommendations are not available because both AI services failed."
+        else:
+            return "No AI service available for generating recommendations."
+    except Exception as e:
+        return f"AI recommendation generation failed: {str(e)}"
 
-# ----------------------- #
-# Streamlit UI
-# ----------------------- #
 st.title("🚀 ClickUp Workspace Analysis")
 
-# Input fields available immediately
 api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password")
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🏢 Describe your company's use case:")
@@ -195,33 +191,28 @@ use_case = st.text_area("🏢 Describe your company's use case:")
 if st.button("🚀 Let's Go!"):
     workspace_data = None
     if api_key:
-        with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
+        with st.spinner("Fetching workspace data..."):
             workspace_data = asyncio.run(get_clickup_workspace_data(api_key))
-        if workspace_data is None:
-            st.error("Invalid API Key provided.")
-        elif "error" in workspace_data:
-            st.error(workspace_data["error"])
-        else:
+        if workspace_data and "error" not in workspace_data:
             st.subheader("📊 Workspace Summary")
-            # Display workspace data as tiles
             cols = st.columns(4)
             for idx, (key, value) in enumerate(workspace_data.items()):
                 with cols[idx % 4]:
                     st.metric(label=key, value=value)
+        else:
+            st.error(workspace_data.get("error", "Failed to retrieve data."))
     else:
         st.info("ClickUp API Key not provided. Skipping workspace data analysis.")
-
-    # Build and display company profile if a company name is provided
+    
     if company_name:
         with st.spinner("Generating company profile..."):
             company_profile = get_company_info(company_name)
-        st.subheader("🏢 Company Profile")
-        st.markdown(company_profile, unsafe_allow_html=True)
     else:
         company_profile = "No company information provided."
     
     with st.spinner("Generating AI recommendations..."):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
-        st.markdown(recommendations, unsafe_allow_html=True)
+    st.subheader("📌 AI Recommendations")
+    st.markdown(recommendations, unsafe_allow_html=True)
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 7px;'>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
