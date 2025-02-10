@@ -115,23 +115,20 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
     
     try:
         if openai_api_key:
-            client = openai.OpenAI(api_key=openai_api_key)
-            response = client.chat.completions.create(
+            response = openai.ChatCompletion.create(
                 model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": prompt}
                 ]
             )
-            return response.choices[0].message.content
-        elif gemini_api_key:
+            return response["choices"][0]["message"]["content"]
+    except Exception as e:
+        if gemini_api_key:
             model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(prompt)
             return response.text
-        else:
-            return "No AI service available for generating recommendations."
-    except Exception as e:
-        return f"AI recommendation generation failed: {str(e)}"
+    return "⚠️ AI recommendations are not available because both AI services failed."
 
 st.title("🚀 ClickUp Workspace Analysis")
 
