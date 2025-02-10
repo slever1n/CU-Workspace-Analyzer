@@ -25,8 +25,8 @@ def get_company_info(company_name):
     if not company_name:
         return "No company information provided."
     prompt = f"""
-Search for and build a short company profile for {company_name}. The profile should include the following sections in markdown:
-- **What they do:** What the company is doing and what they sell.
+Please build a short company profile for {company_name}. The profile should include the following sections in markdown:
+- **Mission:** A brief mission statement.
 - **Key Features:** List 3-5 key features of the company.
 - **Values:** Describe the core values of the company.
 - **Target Audience:** Describe who the company primarily serves.
@@ -34,7 +34,7 @@ Search for and build a short company profile for {company_name}. The profile sho
 """
     try:
         if gemini_api_key:
-            model = genai.GenerativeModel("gemini-pro")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(prompt)
             return response.text
         elif openai_api_key:
@@ -166,7 +166,7 @@ Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful
             return response["choices"][0]["message"]["content"]
     except Exception as e:
         if gemini_api_key:
-            model = genai.GenerativeModel("gemini-pro")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(prompt)
             return response.text
     return "⚠️ AI recommendations are not available because both AI services failed."
