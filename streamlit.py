@@ -188,7 +188,13 @@ st.title("🚀 ClickUp Workspace Analysis")
 
 # Input fields available immediately
 api_key = st.text_input("🔑 Enter ClickUp API Key (Optional):", type="password")
+st.divider() 
+st.text("OR")
+st.divider() 
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
+st.divider() 
+st.text("AND")
+st.divider() 
 use_case = st.text_area("🏢 Describe your company's use case:")
 
 if st.button("🚀 Let's Go!"):
