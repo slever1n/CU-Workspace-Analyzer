@@ -194,7 +194,7 @@ use_case = st.text_area("🏢 Describe your company's use case:")
 if st.button("🚀 Let's Go!"):
     workspace_data = None
     if api_key:
-        with st.spinner("Fetching workspace data..."):
+        with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
             workspace_data = get_clickup_workspace_data(api_key)
         if workspace_data is None:
             st.error("Invalid API Key provided.")
