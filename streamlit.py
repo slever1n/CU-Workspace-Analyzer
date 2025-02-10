@@ -209,9 +209,9 @@ def fetch_list_details(api_key, list_id):
     task_count += len(tasks)
     
     for task in tasks:
-        task_type = task.get("status", {}).get("status", "")
-        logging.info(f"Task ID: {task['id']} - Task Type: {task_type}")
-        completed_tasks += 1 if task_type == "closed" else 0
+        tasks_type = task.get("status", {}).get("status", "")
+        logging.info(f"Task ID: {task['id']} - Task Type: {tasks_type}")
+        completed_tasks += 1 if tasks_type == "closed" else 0
         overdue_tasks += 1 if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000) else 0
         high_priority_tasks += 1 if task.get("priority", "") in ["urgent", "high"] else 0
     
