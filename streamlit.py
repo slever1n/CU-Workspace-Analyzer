@@ -2,6 +2,7 @@ import requests
 import streamlit as st
 import openai
 import google.generativeai as genai
+import time
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analyzer", page_icon="🚀", layout="wide")
@@ -33,7 +34,7 @@ def get_clickup_workspace_data(api_key):
             teams = response.json().get("teams", [])
             if teams:
                 team_id = teams[0]["id"]
-                return {"Team ID": team_id, "Team Name": teams[0]["name"]}
+                return fetch_workspace_details(api_key, team_id)
             else:
                 return {"error": "No teams found in ClickUp workspace."}
         else:
@@ -41,17 +42,41 @@ def get_clickup_workspace_data(api_key):
     except Exception as e:
         return {"error": f"Exception: {str(e)}"}
 
-def generate_company_profile(company_name):
-    """Generates a company profile using AI."""
-    prompt = f"""
-    Provide a brief company profile for {company_name}. Include its industry, key services/products, and notable facts.
-    """
+def fetch_workspace_details(api_key, team_id):
+    """Fetch detailed workspace data including spaces, tasks, and completion stats."""
+    headers = {"Authorization": api_key}
     
+    spaces_url = f"https://api.clickup.com/api/v2/team/{team_id}/space"
+    try:
+        response = requests.get(spaces_url, headers=headers)
+        if response.status_code == 200:
+            spaces = response.json().get("spaces", [])
+            return {
+                "📁 Spaces": len(spaces),
+                "📂 Folders": sum(len(space.get("folders", [])) for space in spaces),
+                "🗂️ Lists": sum(len(space.get("lists", [])) for space in spaces),
+                "✅ Completed Tasks": sum(task.get("status", "") == "completed" for space in spaces for task in space.get("tasks", [])),
+                "⚠️ Overdue Tasks": sum(task.get("due_date", 0) and int(task["due_date"]) < int(time.time() * 1000) for space in spaces for task in space.get("tasks", [])),
+                "📝 Total Tasks": sum(len(space.get("tasks", [])) for space in spaces),
+                "🔥 High Priority Tasks": sum(task.get("priority", "") == "urgent" for space in spaces for task in space.get("tasks", []))
+            }
+        else:
+            return {"error": f"Error fetching workspace details: {response.status_code}"}
+    except Exception as e:
+        return {"error": f"Exception fetching workspace details: {str(e)}"}
+
+def get_company_info(company_name, use_case):
+    """Generates AI-based company profile."""
+    prompt = f"""
+    Generate a detailed company profile for {company_name}.
+    Include the industry, services/products, target market, competitors, and unique selling points.
+    Additionally, relate the profile to the use case: {use_case}.
+    """
     try:
         if openai_api_key:
             response = openai.ChatCompletion.create(
                 model="gpt-4o",
-                messages=[{"role": "system", "content": "You are a knowledgeable assistant."},
+                messages=[{"role": "system", "content": "You are a helpful assistant."},
                           {"role": "user", "content": prompt}]
             )
             return response["choices"][0]["message"]["content"]
@@ -60,7 +85,7 @@ def generate_company_profile(company_name):
             model = genai.GenerativeModel("gemini-pro")
             response = model.generate_content(prompt)
             return response.text
-    return "⚠️ Error generating company profile. AI services unavailable."
+    return "⚠️ AI-generated company profile is not available."
 
 def get_ai_recommendations(use_case, company_profile, workspace_details):
     """Generates AI-powered recommendations using OpenAI or Gemini."""
@@ -86,7 +111,6 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
     List relevant ClickUp templates and best practices for this use case.
     Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com.
     """
-    
     try:
         if openai_api_key:
             response = openai.ChatCompletion.create(
@@ -105,36 +129,22 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
 # UI Setup
 st.title("📊 ClickUp Workspace Analyzer")
 
-clickup_api_key = st.text_input("🔑 ClickUp API Key (Optional)", type="password")
+option = st.radio("Choose Input Method:", ["Enter ClickUp API Key", "Enter Company Name"])
 use_case = st.text_input("📌 Use Case (e.g., Consulting, Sales)")
-company_name = st.text_input("🏢 Company Name (Optional)")
 
-if st.button("🚀 Analyze Workspace"):
-    if not use_case:
-        st.error("Please enter a use case.")
-    else:
-        with st.spinner("🔄 Fetching ClickUp Workspace Data..."):
-            workspace_details = get_clickup_workspace_data(clickup_api_key) if clickup_api_key else None
-        
-        with st.spinner("🤖 Generating company profile..."):
-            company_profile = generate_company_profile(company_name) if company_name else "No company info provided."
-        
-        if workspace_details and "error" in workspace_details:
-            st.error(f"❌ {workspace_details['error']}")
-        elif workspace_details:
-            st.subheader("📝 Workspace Analysis:")
-            cols = st.columns(2)
-            for i, (key, value) in enumerate(workspace_details.items()):
-                with cols[i % 2]:
-                    st.metric(label=key, value=value)
-        
-        # Display Company Info
-        st.subheader("🏢 Company Information:")
-        st.markdown(f"**Generated Profile:** {company_profile}")
-        
-        with st.spinner("🤖 Generating AI recommendations..."):
-            ai_recommendations = get_ai_recommendations(use_case, company_profile, workspace_details)
-        
+if option == "Enter ClickUp API Key":
+    clickup_api_key = st.text_input("🔑 ClickUp API Key", type="password")
+    if st.button("🚀 Analyze"):
+        workspace_details = get_clickup_workspace_data(clickup_api_key)
+        company_profile = "(Workspace analysis only)"
+        ai_recommendations = get_ai_recommendations(use_case, company_profile, workspace_details)
+        st.subheader("📌 AI Recommendations:")
         st.markdown(ai_recommendations, unsafe_allow_html=True)
 
-st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
+elif option == "Enter Company Name":
+    company_name = st.text_input("🏢 Company Name")
+    if st.button("🚀 Analyze"):
+        company_profile = get_company_info(company_name, use_case)
+        ai_recommendations = get_ai_recommendations(use_case, company_profile, "No workspace details available")
+        st.subheader("📌 AI Recommendations:")
+        st.markdown(ai_recommendations, unsafe_allow_html=True)
