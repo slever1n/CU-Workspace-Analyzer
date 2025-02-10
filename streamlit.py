@@ -14,13 +14,10 @@ openai_org_id = st.secrets.get("OPENAI_ORG_ID")
 gemini_api_key = st.secrets.get("GEMINI_API_KEY")
 
 # Configure OpenAI and Gemini if API keys are available
-if openai_api_key and openai_org_id:
-    openai.api_key = f"{openai_org_id}:{openai_api_key}"  # Combine org ID and API key
-elif openai_api_key: # if no org id is provided use the API key only
+# Configure OpenAI and Gemini if API keys are available
+if openai_api_key:
+    openai.organization = openai_org_id
     openai.api_key = openai_api_key
-else:
-    st.error("OpenAI API key is missing. Please provide the key in Streamlit secrets.")
-    st.stop()  # Stop execution if the key is missing
 
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
