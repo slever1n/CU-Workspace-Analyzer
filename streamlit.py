@@ -221,10 +221,7 @@ if st.button("Analyze Workspace"):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
-# Section with useful hyperlinks to ClickUp resources and templates
-st.markdown("### 🛠️ Useful ClickUp Templates & Resources:")
-st.markdown("- [ClickUp Templates](https://clickup.com/templates)")
-st.markdown("- [ClickUp University](https://university.clickup.com)")
-st.markdown("- [ClickUp Help Center](https://help.clickup.com)")
 
-st.markdown("<div style='position: fixed; bottom: 10px; right: 10px;'>Made by: Yul</div>", unsafe_allow_html=True)
+
+
+st.markdown("<div style='position: fixed; bottom: 10px; left: 10px;'>a little tool made by: Yul☺️</div>", unsafe_allow_html=True)
