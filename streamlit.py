@@ -4,6 +4,7 @@ import time
 import openai
 import google.generativeai as genai
 import textwrap
+import concurrent.futures
 
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
@@ -56,7 +57,7 @@ def get_company_info(company_name):
     except Exception as e:
         return f"Error fetching company details: {str(e)}"
 
-def get_clickup_workspace_data(api_key):
+def fetch_workspace_data(api_key):
     """
     Fetches real workspace data from the ClickUp API.
     """
@@ -94,33 +95,17 @@ def fetch_workspace_details(api_key, team_id):
         space_count = len(spaces)
         folder_count, list_count, task_count = 0, 0, 0
         completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
-        
-        for space in spaces:
-            space_id = space["id"]
-            folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
-            folders_response = requests.get(folders_url, headers=headers).json()
-            folders = folders_response.get("folders", [])
-            folder_count += len(folders)
-            
-            for folder in folders:
-                folder_id = folder["id"]
-                lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
-                lists_response = requests.get(lists_url, headers=headers).json()
-                lists = lists_response.get("lists", [])
-                list_count += len(lists)
-                
-                for lst in lists:
-                    list_id = lst["id"]
-                    tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
-                    tasks_response = requests.get(tasks_url, headers=headers).json()
-                    tasks = tasks_response.get("tasks", [])
-                    
-                    task_count += len(tasks)
-                    completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
-                    overdue_tasks += sum(1 for task in tasks 
-                                         if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
-                    high_priority_tasks += sum(1 for task in tasks 
-                                               if task.get("priority", "") in ["urgent", "high"])
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future_to_space = {executor.submit(fetch_space_details, api_key, space["id"]): space for space in spaces}
+            for future in concurrent.futures.as_completed(future_to_space):
+                space_result = future.result()
+                folder_count += space_result['folder_count']
+                list_count += space_result['list_count']
+                task_count += space_result['task_count']
+                completed_tasks += space_result['completed_tasks']
+                overdue_tasks += space_result['overdue_tasks']
+                high_priority_tasks += space_result['high_priority_tasks']
         
         task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
         
@@ -136,6 +121,91 @@ def fetch_workspace_details(api_key, team_id):
         }
     except Exception as e:
         return {"error": f"Exception: {str(e)}"}
+
+def fetch_space_details(api_key, space_id):
+    """
+    Fetches details for a specific space including folders, lists, and tasks.
+    """
+    headers = {"Authorization": api_key}
+    folder_count, list_count, task_count = 0, 0, 0
+    completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+
+    folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
+    folders_response = requests.get(folders_url, headers=headers).json()
+    folders = folders_response.get("folders", [])
+    folder_count += len(folders)
+    
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_to_folder = {executor.submit(fetch_folder_details, api_key, folder["id"]): folder for folder in folders}
+        for future in concurrent.futures.as_completed(future_to_folder):
+            folder_result = future.result()
+            list_count += folder_result['list_count']
+            task_count += folder_result['task_count']
+            completed_tasks += folder_result['completed_tasks']
+            overdue_tasks += folder_result['overdue_tasks']
+            high_priority_tasks += folder_result['high_priority_tasks']
+    
+    return {
+        'folder_count': folder_count,
+        'list_count': list_count,
+        'task_count': task_count,
+        'completed_tasks': completed_tasks,
+        'overdue_tasks': overdue_tasks,
+        'high_priority_tasks': high_priority_tasks
+    }
+
+def fetch_folder_details(api_key, folder_id):
+    """
+    Fetches details for a specific folder including lists and tasks.
+    """
+    headers = {"Authorization": api_key}
+    list_count, task_count = 0, 0
+    completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+
+    lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
+    lists_response = requests.get(lists_url, headers=headers).json()
+    lists = lists_response.get("lists", [])
+    list_count += len(lists)
+    
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_to_list = {executor.submit(fetch_list_details, api_key, lst["id"]): lst for lst in lists}
+        for future in concurrent.futures.as_completed(future_to_list):
+            list_result = future.result()
+            task_count += list_result['task_count']
+            completed_tasks += list_result['completed_tasks']
+            overdue_tasks += list_result['overdue_tasks']
+            high_priority_tasks += list_result['high_priority_tasks']
+    
+    return {
+        'list_count': list_count,
+        'task_count': task_count,
+        'completed_tasks': completed_tasks,
+        'overdue_tasks': overdue_tasks,
+        'high_priority_tasks': high_priority_tasks
+    }
+
+def fetch_list_details(api_key, list_id):
+    """
+    Fetches details for a specific list including tasks.
+    """
+    headers = {"Authorization": api_key}
+    task_count = 0
+    completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+
+    tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
+    tasks_response = requests.get(tasks_url, headers=headers).json()
+    tasks = tasks_response.get("tasks", [])
+    task_count += len(tasks)
+    completed_tasks += sum(1 for task in tasks if task.get("status", "") == "complete")
+    overdue_tasks += sum(1 for task in tasks if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000))
+    high_priority_tasks += sum(1 for task in tasks if task.get("priority", "") in ["urgent", "high"])
+    
+    return {
+        'task_count': task_count,
+        'completed_tasks': completed_tasks,
+        'overdue_tasks': overdue_tasks,
+        'high_priority_tasks': high_priority_tasks
+    }
 
 def get_ai_recommendations(use_case, company_profile, workspace_details):
     """
@@ -195,7 +265,7 @@ if st.button("🚀 Let's Go!"):
     workspace_data = None
     if api_key:
         with st.spinner("Fetching workspace data and crafting suggestions, this may take a while, switch to another tab in the meantime..."):
-            workspace_data = get_clickup_workspace_data(api_key)
+            workspace_data = fetch_workspace_data(api_key)
         if workspace_data is None:
             st.error("Invalid API Key provided.")
         elif "error" in workspace_data:
