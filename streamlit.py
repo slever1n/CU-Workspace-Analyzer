@@ -321,4 +321,4 @@ if st.button("🚀 Let's Go!"):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
-st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 10px;'>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
+st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px;'>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
