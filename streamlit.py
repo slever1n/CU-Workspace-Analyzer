@@ -23,13 +23,11 @@ with st.popover("ℹ️ How to use"):
 
     **Company Use Case:** Describe your company's use case (e.g., consulting, project management, customer service).
 
-    Click the 🚀 Let's Go! button to:
+    Click the :green[*🚀 Let's Go!*] button to:
 
-    Fetch and display workspace metrics.
-
-    Generate a company profile.
-
-    Generate tailored AI recommendations based on the provided data.
+    1. Fetch and display workspace metrics.
+    2. Generate a company profile.
+    3. Generate tailored AI recommendations based on the provided data.
     """)
 
 # Retrieve API keys from Streamlit secrets
