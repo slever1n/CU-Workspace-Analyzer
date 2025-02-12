@@ -17,13 +17,13 @@ st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", la
 st.title("🚀 ClickUp Workspace Analysis")
 with st.popover("ℹ️ How to use"):
     st.markdown("""
-    :red[***ClickUp API Key (Optional):***]
-    - Enter your ClickUp API key to fetch workspace data. Once you enter your API, get this from your ClickUp settings and going to Apps to generate an API Key. **Wait for a few seconds for the app to pull your available Workspaces.**
+    :blue-background[***ClickUp API Key (Optional):***]
+    - Enter your ClickUp API key to fetch workspace data. You can get this from your ClickUp settings and going to Apps to generate an API Key. **Once you enter your API, wait for a few seconds for the app to pull your available Workspaces.**
 
-    :red[***Company Name (Optional):***] 
+    :blue-background[***Company Name (Optional):***] 
     - Enter a company name to generate a short company profile using AI.
 
-    :red[***Company Use Case:***] 
+    :blue-background[***Company Use Case:***] 
     - Describe your company's use case (e.g., consulting, project management, customer service).
 
     **Click the :green[*🚀 Let's Go!*] button to:**
