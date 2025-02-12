@@ -13,6 +13,21 @@ logging.basicConfig(level=logging.INFO)
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
 
+with st.popover("How to use"):
+    st.markdown("Workspace Analysis:
+Fetches and displays metrics (e.g., Spaces, Folders, Lists, Total Tasks, Completed Tasks, Task Completion Rate, Overdue Tasks, High Priority Tasks) from your ClickUp workspace using the ClickUp API.
+
+Company Profile Generation:
+Uses the Gemini model (specifically gemini-2.0-flash) to create a short, structured company profile based on a provided company name. If Gemini is not available, it falls back to OpenAI.
+
+AI-Powered Recommendations:
+Combines workspace metrics, the company profile, and your described use case to generate actionable recommendations and best practices to optimize your workflow.
+
+Useful ClickUp Resources:
+Provides direct links to ClickUp Templates, ClickUp University, and the ClickUp Help Center.")
+    
+
+
 # Retrieve API keys from Streamlit secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
 openai_org_id = st.secrets.get("OPENAI_ORG_ID")
