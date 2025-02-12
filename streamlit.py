@@ -15,7 +15,7 @@ st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", la
 
 # Add popover beside the title
 st.title("🚀 ClickUp Workspace Analysis")
-st.popover("ℹ️ How to use"):
+with st.popover("ℹ️ How to use"):
     st.markdown("""
     ClickUp API Key (Optional): Enter your ClickUp API key to fetch workspace data. Once you enter your API, wait for a few seconds for the app to pull your available Workspaces.
 
