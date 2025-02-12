@@ -18,8 +18,7 @@ st.title("🚀 ClickUp Workspace Analysis")
 with st.popover("ℹ️ How to use"):
     st.markdown("""
     :blue-background[***ClickUp API Key (Optional):***]
-    - Enter your ClickUp API key to fetch workspace data. You can get this from your ClickUp settings and going to Apps to generate an API Key. 
-    \n**- Once you enter your API, wait for a few seconds for the app to pull your available Workspaces.**
+    - Enter your ClickUp API key to fetch workspace data. You can get this from your ClickUp settings and going to Apps to generate an API Key. **Once you enter your API, wait for a few seconds for the app to pull your available Workspaces.**
 
     :blue-background[***Company Name (Optional):***] 
     - Enter a company name to generate a short company profile using AI.
