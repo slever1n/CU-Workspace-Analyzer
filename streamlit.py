@@ -18,7 +18,7 @@ st.title("🚀 ClickUp Workspace Analysis")
 with st.popover("ℹ️ How to use"):
     st.markdown("""
     :blue-background[***ClickUp API Key (Optional):***]
-    - Enter your ClickUp API key to fetch workspace data. You can get this from your ClickUp settings and going to Apps to generate an API Key. **Once you enter your API, wait for a few seconds for the app to pull your available Workspaces.**
+    - Enter your ClickUp API key to fetch Workspace data. You can get this from your ClickUp settings and going to Apps to generate an API Key. **Once you enter your API, wait for a few seconds for the app to pull your available Workspaces.**
 
     :blue-background[***Company Name (Optional):***] 
     - Enter a company name to generate a short company profile using AI.
@@ -28,9 +28,11 @@ with st.popover("ℹ️ How to use"):
 
     **Click the :green-background[*🚀 Let's Go!*] button to:**
 
-    1. Fetch and display workspace metrics.
+    1. Fetch and display Workspace metrics.
     2. Generate a company profile.
     3. Generate tailored AI recommendations based on the provided data.
+
+    *ℹ️ This tool uses Gemini AI to provide AI recommendations and company profile*
     """)
 
 # Retrieve API keys from Streamlit secrets
