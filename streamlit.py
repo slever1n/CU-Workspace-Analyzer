@@ -13,20 +13,23 @@ logging.basicConfig(level=logging.INFO)
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
 
-# Add popover
-with st.sidebar.expander("ℹ️ How to use"):
+# Add popover beside the title
+st.title("🚀 ClickUp Workspace Analysis")
+if st.button("ℹ️ How to use"):
     st.markdown("""
-    **Workspace Analysis:**
-    Fetches and displays metrics (e.g., Spaces, Folders, Lists, Total Tasks, Completed Tasks, Task Completion Rate, Overdue Tasks, High Priority Tasks) from your ClickUp workspace using the ClickUp API.
+    ClickUp API Key (Optional): Enter your ClickUp API key to fetch workspace data. Once you enter your API, wait for a few seconds for the app to pull your available Workspaces.
 
-    **Company Profile Generation:**
-    Uses the Gemini model (specifically gemini-2.0-flash) to create a short, structured company profile based on a provided company name. If Gemini is not available, it falls back to OpenAI.
+    Company Use Case: Describe your company's use case (e.g., consulting, project management, customer service).
 
-    **AI-Powered Recommendations:**
-    Combines workspace metrics, the company profile, and your described use case to generate actionable recommendations and best practices to optimize your workflow.
+    Company Name (Optional): Enter a company name to generate a short company profile using AI.
 
-    **Useful ClickUp Resources:**
-    Provides direct links to ClickUp Templates, ClickUp University, and the ClickUp Help Center.
+    Click the 🚀 Let's Go! button to:
+
+    Fetch and display workspace metrics.
+
+    Generate a company profile.
+
+    Generate tailored AI recommendations based on the provided data.
     """)
 
 # Retrieve API keys from Streamlit secrets
@@ -285,11 +288,6 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
             response = model.generate_content(prompt)
             return response.text
     return "⚠️ AI recommendations are not available because both AI services failed."
-
-# ----------------------- #
-# Streamlit UI
-# ----------------------- #
-st.title("🚀 ClickUp Workspace Analysis")
 
 # Input fields available immediately
 api_key = st.text_input("🔑 Enter ClickUp API Key: (Optional)", type="password")
