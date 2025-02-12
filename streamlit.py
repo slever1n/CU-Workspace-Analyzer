@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
 
 with st.popover("How to use"):
-    st.markdown("Workspace Analysis:
+    st.text("Workspace Analysis:
 Fetches and displays metrics (e.g., Spaces, Folders, Lists, Total Tasks, Completed Tasks, Task Completion Rate, Overdue Tasks, High Priority Tasks) from your ClickUp workspace using the ClickUp API.
 
 Company Profile Generation:
