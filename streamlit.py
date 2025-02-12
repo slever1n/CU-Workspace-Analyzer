@@ -13,6 +13,21 @@ logging.basicConfig(level=logging.INFO)
 # Set page title and icon
 st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🚀", layout="wide")
 
+# Add popover
+with st.sidebar.expander("ℹ️ How to use"):
+    st.markdown("""
+    **Workspace Analysis:**
+    Fetches and displays metrics (e.g., Spaces, Folders, Lists, Total Tasks, Completed Tasks, Task Completion Rate, Overdue Tasks, High Priority Tasks) from your ClickUp workspace using the ClickUp API.
+
+    **Company Profile Generation:**
+    Uses the Gemini model (specifically gemini-2.0-flash) to create a short, structured company profile based on a provided company name. If Gemini is not available, it falls back to OpenAI.
+
+    **AI-Powered Recommendations:**
+    Combines workspace metrics, the company profile, and your described use case to generate actionable recommendations and best practices to optimize your workflow.
+
+    **Useful ClickUp Resources:**
+    Provides direct links to ClickUp Templates, ClickUp University, and the ClickUp Help Center.
+    """)
 
 # Retrieve API keys from Streamlit secrets
 openai_api_key = st.secrets.get("OPENAI_API_KEY")
@@ -245,7 +260,7 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
         Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
         
         <h3>✅ Actionable Recommendations</h3>
-        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations from the company profile.
+        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations for the company's core values and mission.
         
         <h3>🏆 Best Practices & Tips</h3>
         Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
