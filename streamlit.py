@@ -26,7 +26,7 @@ with st.popover("ℹ️ How to use"):
     :blue-background[***Company Use Case:***] 
     - Describe your company's use case (e.g., consulting, project management, customer service).
 
-    **Click the :green[*🚀 Let's Go!*] button to:**
+    **Click the :green-background[*🚀 Let's Go!*] button to:**
 
     1. Fetch and display workspace metrics.
     2. Generate a company profile.
