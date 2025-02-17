@@ -306,6 +306,9 @@ else:
 company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🧑‍💻 Describe your company's use case:")
 
+
+col1, col2 = st.columns(2)
+with col1:
 if st.button("🚀 Let's Go!"):
     if api_key and workspace_id:
         workspace_data = None
@@ -337,5 +340,11 @@ if st.button("🚀 Let's Go!"):
     with st.spinner("Generating AI recommendations..."):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
+
+with col2:
+    if st.button("🧹 Clear Input"):
+        api_key = ""
+        company_name = ""
+        use_case = ""
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
