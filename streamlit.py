@@ -352,10 +352,10 @@ with col1:
             st.markdown(recommendations, unsafe_allow_html=True)
 with col2:
     
-       def clear_text():
-            st.session_state["text"] = ""
+    def clear_text():
+        st.session_state["text"] = ""
     
-        st.button("clear text input", on_click=clear_text)
-        st.write(input)
+    st.button("clear text input", on_click=clear_text)
+    st.write(input)
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
