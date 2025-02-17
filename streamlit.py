@@ -351,7 +351,7 @@ with col1:
             recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
             st.markdown(recommendations, unsafe_allow_html=True)
 with col2:
-    if st.button("🧹 Clear Input"):
+    
        def clear_text():
             st.session_state["text"] = ""
     
