@@ -307,62 +307,44 @@ company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🧑‍💻 Describe your company's use case:")
 
 
-# Input fields available immediately
-api_key = st.text_input("🔑 Enter ClickUp API Key: (Optional)", type="password")
-company_name = st.text_input("🏢 Enter Company Name (Optional):")
-use_case = st.text_area("🧑‍💻 Describe your company's use case:")
-
-# Input fields available immediately
-api_key = st.text_input("🔑 Enter ClickUp API Key: (Optional)", type="password")
-company_name = st.text_input("🏢 Enter Company Name (Optional):")
-use_case = st.text_area("🧑‍💻 Describe your company's use case:")
-
-# Add buttons for "Let's Go" and "Clear Input"
 col1, col2 = st.columns(2)
 with col1:
-    if st.button("🚀 Let's Go!"):
-        if api_key:
-            workspaces = fetch_workspaces(api_key)
-            if workspaces:
-                workspace_id = st.selectbox("💼 Select Workspace:", options=list(workspaces.keys()), format_func=lambda x: workspaces[x])
-            else:
-                st.error("Failed to fetch workspaces. Please check your API key.")
+if st.button("🚀 Let's Go!"):
+    if api_key and workspace_id:
+        workspace_data = None
+        with st.spinner("Fetching workspace data, may take longer for larger Workspaces..."):
+            workspace_data = fetch_workspace_details(api_key, workspace_id)
+        if workspace_data is None:
+            st.error("Failed to fetch workspace data.")
+        elif "error" in workspace_data:
+            st.error(workspace_data["error"])
         else:
-            workspace_id = None
+            st.subheader("📊 Workspace Summary")
+            # Display workspace data as tiles
+            cols = st.columns(4)
+            for idx, (key, value) in enumerate(workspace_data.items()):
+                with cols[idx % 4]:
+                    st.metric(label=key, value=value)
+    else:
+        workspace_data = None
 
-        if api_key and workspace_id:
-            workspace_data = None
-            with st.spinner("Fetching workspace data, may take longer for larger Workspaces..."):
-                workspace_data = fetch_workspace_details(api_key, workspace_id)
-            if workspace_data is None:
-                st.error("Failed to fetch workspace data.")
-            elif "error" in workspace_data:
-                st.error(workspace_data["error"])
-            else:
-                st.subheader("📊 Workspace Summary")
-                # Display workspace data as tiles
-                cols = st.columns(4)
-                for idx, (key, value) in enumerate(workspace_data.items()):
-                    with cols[idx % 4]:
-                        st.metric(label=key, value=value)
-        else:
-            workspace_data = None
+    # Build and display company profile if a company name is provided
+    if company_name:
+        with st.spinner("Generating company profile..."):
+            company_profile = get_company_info(company_name)
+        st.subheader("🏢 Company Profile")
+        st.markdown(company_profile, unsafe_allow_html=True)
+    else:
+        company_profile = "No company information provided."
+    
+    with st.spinner("Generating AI recommendations..."):
+        recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
+        st.markdown(recommendations, unsafe_allow_html=True)
 
-        # Build and display company profile if a company name is provided
-        if company_name:
-            with st.spinner("Generating company profile..."):
-                company_profile = get_company_info(company_name)
-            st.subheader("🏢 Company Profile")
-            st.markdown(company_profile, unsafe_allow_html=True)
-        else:
-            company_profile = "No company information provided."
-        
-        with st.spinner("Generating AI recommendations..."):
-            recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
-            st.markdown(recommendations, unsafe_allow_html=True)
 with col2:
     if st.button("🧹 Clear Input"):
         api_key = ""
         company_name = ""
         use_case = ""
+
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
