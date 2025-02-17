@@ -318,7 +318,7 @@ company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🧑‍💻 Describe your company's use case:")
 
 # Add buttons for "Let's Go" and "Clear Input"
-col1, col2 = st.columns(1,1)
+col1, col2 = st.columns(2)
 with col1:
     if st.button("🚀 Let's Go!"):
         if api_key:
