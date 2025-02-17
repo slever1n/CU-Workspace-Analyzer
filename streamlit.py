@@ -307,8 +307,13 @@ company_name = st.text_input("🏢 Enter Company Name (Optional):")
 use_case = st.text_area("🧑‍💻 Describe your company's use case:")
 
 
-col1, col2 = st.columns(2)
-col1, col2 = st.columns(2)
+# Input fields available immediately
+api_key = st.text_input("🔑 Enter ClickUp API Key: (Optional)", type="password")
+company_name = st.text_input("🏢 Enter Company Name (Optional):")
+use_case = st.text_area("🧑‍💻 Describe your company's use case:")
+
+# Add buttons for "Let's Go" and "Clear Input"
+col1, col2 = st.columns([1, 1])
 with col1:
     if st.button("🚀 Let's Go!"):
         if api_key:
@@ -352,8 +357,6 @@ with col1:
             st.markdown(recommendations, unsafe_allow_html=True)
 with col2:
     if st.button("🧹 Clear Input"):
-        api_key = ""
-        company_name = ""
-        use_case = ""
+        st.experimental_set_query_params()  # Clear all input fields
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
