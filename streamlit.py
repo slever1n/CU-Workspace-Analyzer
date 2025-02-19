@@ -339,4 +339,12 @@ if st.button("🚀 Let's Go!"):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
+
+text_to_copy = st.text_input("Hello, World!")
+
+hosted_html_file = "https://everydayswag.org/files/copy.html"
+iframe_url = f"{hosted_html_file}?copy={text_to_copy}"
+
+st.markdown(f'<iframe style="overflow: hidden;" src="{iframe_url}"></iframe>', unsafe_allow_html=True)
+
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
