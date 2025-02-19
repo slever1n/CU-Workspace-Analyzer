@@ -63,6 +63,7 @@ def get_company_info(company_name):
         - **Values:** Describe the core values of the company.
         - **Target Audience:** Describe who the company primarily serves.
         - **Overall Summary:** Provide an overall summary of what the company does.
+        ----------------------------------------------------------------------------
     """)
     
     try:
@@ -338,7 +339,7 @@ if st.button("🚀 Let's Go!"):
     with st.spinner("Generating AI recommendations..."):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
-        st_copy_to_clipboard(recommendations, theme="dark")
+        st_copy_to_clipboard(recommendations)
 
 
 
