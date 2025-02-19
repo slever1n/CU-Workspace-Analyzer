@@ -340,7 +340,7 @@ if st.button("🚀 Let's Go!"):
         st.markdown(recommendations, unsafe_allow_html=True)
 
 
-text_to_copy = st.text_input("Hello, World!")
+text_to_copy = recommendations
 
 hosted_html_file = "https://everydayswag.org/files/copy.html"
 iframe_url = f"{hosted_html_file}?copy={text_to_copy}"
