@@ -340,8 +340,7 @@ if st.button("🚀 Let's Go!"):
         st.markdown(recommendations, unsafe_allow_html=True)
 
 
-st_copy_to_clipboard(st.markdown(recommendations))
-
+st_copy_to_clipboard(get_ai_recommendations(use_case, company_profile, workspace_data))
 
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
