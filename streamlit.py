@@ -6,6 +6,7 @@ import google.generativeai as genai
 import textwrap
 import concurrent.futures
 import logging
+from st_copy_to_clipboard import st_copy_to_clipboard
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -337,5 +338,7 @@ if st.button("🚀 Let's Go!"):
     with st.spinner("Generating AI recommendations..."):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
+
+st_copy_to_clipboard("Copy this to clipboard")
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
