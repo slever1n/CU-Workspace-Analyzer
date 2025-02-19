@@ -340,7 +340,7 @@ if st.button("🚀 Let's Go!"):
         st.markdown(recommendations, unsafe_allow_html=True)
 
 
-st_copy_to_clipboard(st.markdown(recommendations, unsafe_allow_html=True))
+st_copy_to_clipboard(st.markdown(recommendations))
 
 
 
