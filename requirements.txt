@@ -5,3 +5,4 @@ beautifulsoup4
 aiohttp
 asyncio
 aiohttp
+st-copy-to-clipboard
