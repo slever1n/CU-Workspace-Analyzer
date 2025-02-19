@@ -338,7 +338,7 @@ if st.button("🚀 Let's Go!"):
     with st.spinner("Generating AI recommendations..."):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
-        st_copy_to_clipboard(recommendations, show_text=True, theme="dark")
+        st_copy_to_clipboard(recommendations, theme="dark")
 
 
 
