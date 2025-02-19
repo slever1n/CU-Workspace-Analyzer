@@ -333,7 +333,6 @@ if st.button("🚀 Let's Go!"):
         st.subheader("🏢 Company Profile")
         st.markdown(company_profile, unsafe_allow_html=True)
         st_copy_to_clipboard(company_profile, before_copy_label='📋 Click to copy', after_copy_label='✅ Company Profile copied!')
-        st.divider()
     else:
         company_profile = "No company information provided."
     
