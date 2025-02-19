@@ -63,7 +63,6 @@ def get_company_info(company_name):
         - **Values:** Describe the core values of the company.
         - **Target Audience:** Describe who the company primarily serves.
         - **Overall Summary:** Provide an overall summary of what the company does.
-        ----------------------------------------------------------------------------
     """)
     
     try:
@@ -333,12 +332,14 @@ if st.button("🚀 Let's Go!"):
             company_profile = get_company_info(company_name)
         st.subheader("🏢 Company Profile")
         st.markdown(company_profile, unsafe_allow_html=True)
+        st.divider()
     else:
         company_profile = "No company information provided."
     
     with st.spinner("Generating AI recommendations..."):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
+        st.divider()
         st_copy_to_clipboard(recommendations)
 
 
