@@ -341,6 +341,8 @@ if st.button("🚀 Let's Go!"):
         st.markdown(recommendations, unsafe_allow_html=True)
         st.divider()
         st_copy_to_clipboard(recommendations)
+        st_copy_to_clipboard(recommendations, before_copy_label='📋Push to copy', after_copy_label='✅Text copied!')
+        st_copy_to_clipboard(recommendations, before_copy_label='Push to copy', after_copy_label='Text copied!', show_text=True)
 
 
 
