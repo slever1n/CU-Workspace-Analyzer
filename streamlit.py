@@ -355,6 +355,7 @@ def create_copy_button(text_to_copy):
     
     st.markdown(button_html, unsafe_allow_html=True)
 
+text_to_copy = recommendations
 st.text_area("Text to copy:", value=recommendations, key="text_to_copy")
 create_copy_button(st.session_state.text_to_copy)
 
