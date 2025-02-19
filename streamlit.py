@@ -339,25 +339,5 @@ if st.button("🚀 Let's Go!"):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
         st.markdown(recommendations, unsafe_allow_html=True)
 
-        def create_copy_button(text_to_copy):
-            button_id = "copyButton" + text_to_copy
-    
-            button_html = f"""<button id="{button_id}">Copy</button>
-            <script>
-            document.getElementById("{button_id}").onclick = function() {{
-                navigator.clipboard.writeText("{text_to_copy}").then(function() {{
-                    console.log('Async: Copying to clipboard was successful!');
-                }}, function(err) {{
-                    console.error('Async: Could not copy text: ', err);
-                }});
-            }}
-            </script>"""
-    
-            st.markdown(button_html, unsafe_allow_html=True)
-
-        text_to_copy = recommendations
-        st.text_area("Text to copy:", value=recommendations, key="text_to_copy")
-        create_copy_button(st.session_state.text_to_copy)
-
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made by: Yul 😊</div>", unsafe_allow_html=True)
