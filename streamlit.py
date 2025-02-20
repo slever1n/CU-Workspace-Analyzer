@@ -339,6 +339,7 @@ if st.button("🚀 Let's Go!"):
     
     with st.spinner("Generating AI recommendations..."):
         recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
+        st.subheader("💡 Recommendations")
         st.markdown(recommendations, unsafe_allow_html=True)
         st.divider()
         st_copy_to_clipboard(recommendations, before_copy_label='📋 Click to copy', after_copy_label='✅ AI Recommendations copied!')
