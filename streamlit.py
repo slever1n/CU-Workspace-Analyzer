@@ -60,9 +60,9 @@ def get_company_info(company_name):
         Please build a short company profile for {company_name}. The profile should include the following sections in markdown:
         - **Mission:** A brief mission statement.
         - **Key Features:** List 3-5 key features of the company.
-        - **Values:** Describe the core values of the company.
-        - **Target Audience:** Describe who the company primarily serves.
-        - **Overall Summary:** Provide an overall summary of what the company does.
+        - **Their Product:** Describe the company’s main product or service in detail.
+        - **Target Audience:** Identify the primary groups of people or industries the company caters to.
+        - **Overall Summary:** Summarize the company’s identity, vision, and value proposition in a few sentences.
     """)
     
     try:
