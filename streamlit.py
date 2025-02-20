@@ -60,6 +60,7 @@ def get_company_info(company_name):
         Please build a short company profile for {company_name}. The profile should include the following sections in markdown:
         - **Mission:** A brief mission statement.
         - **Key Features:** List 3-5 key features of the company.
+        - **Vision:** State the long-term vision of the company, highlighting its aspirations and the impact it aims to create.
         - **Their Product:** Describe the company’s main product or service in detail.
         - **Target Audience:** Identify the primary groups of people or industries the company caters to.
         - **Overall Summary:** Summarize the company’s identity, vision, and value proposition in a few sentences.
@@ -267,7 +268,7 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
         Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
         
         <h3>✅ Actionable Recommendations</h3>
-        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations for the company's core values and mission.
+        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations for the company's core values, product and mission.
         
         <h3>🏆 Best Practices & Tips</h3>
         Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
