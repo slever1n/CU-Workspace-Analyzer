@@ -17,9 +17,9 @@ st.set_page_config(
     page_icon="🦄",
     layout="wide",
     menu_items={
-        'Get Help': 'https://www.extremelycoolapp.com/help',
-        'Report a bug': "https://www.extremelycoolapp.com/bug",
-        'About': "# This is a header. This is an *extremely* cool app!"
+        'ClickUp Help Center': 'https://help.clickup.com/hc/en-us',
+        'DA Play Directory': "https://app.clickup-stg.com/333/v/l/6-980700121484-1",
+        'DA Handbook': "# This is a header. This is an *extremely* cool app!"
     }
 )
 
