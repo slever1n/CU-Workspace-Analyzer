@@ -58,6 +58,8 @@ def get_company_info(company_name):
     
     prompt = textwrap.dedent(f"""
         Please build a short company profile for {company_name}. The profile should include the following sections:
+        - **Company Size:** Provide an estimate of the company’s size (e.g., number of employees) based on public information or platforms like LinkedIn.
+        - **Net Worth:** Include the company’s net worth or valuation if publicly available
         - **Mission:** A brief mission statement.
         - **Key Features:** List 3-5 key features of the company.
         - **Vision:** State the long-term vision of the company, highlighting its aspirations and the impact it aims to create.
