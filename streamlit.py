@@ -22,16 +22,16 @@ with st.popover("ℹ️ How to use"):
     - Enter your ClickUp API key to fetch Workspace data. You can get this from your ClickUp settings and going to Apps to generate an API Key. **Once you enter your API, wait for a few seconds for the app to pull your available Workspaces.**
 
     :blue-background[***Company Name (Optional):***] 
-    - Enter a company name to generate a short company profile using AI.
+    - Enter a company name to generate a short company profile.
 
     :blue-background[***Company Use Case:***] 
-    - Describe your company's use case (e.g., consulting, project management, customer service).
+    - Describe your company's use case (e.g., consulting, project management, customer service) or the agenda mentioned by the user in the email.
 
     **Click the :green-background[*🚀 Let's Go!*] button to:**
 
-    1. Fetch and display Workspace metrics.
+    1. Fetch and display Workspace metrics(If API Key is entered and based on the Workspace selected).
     2. Generate a company profile.
-    3. Generate tailored AI recommendations based on the provided data.
+    3. Generate tailored recommendations based on the provided data.
 
     *ℹ️ This tool uses Gemini AI to provide AI recommendations and company profile*
     """)
