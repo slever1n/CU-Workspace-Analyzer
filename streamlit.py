@@ -333,7 +333,7 @@ if st.button("🚀 Let's Go!"):
             company_profile = get_company_info(company_name)
         st.subheader("🏢 Company Profile")
         st.markdown(company_profile, unsafe_allow_html=True)
-        st_copy_to_clipboard(company_profile, before_copy_label='📋 Click to copy', after_copy_label='✅ Company Profile copied!')
+        st_copy_to_clipboard(company_profile, before_copy_label='📋 Copy', after_copy_label='✅ Company Profile copied!')
     else:
         company_profile = "No company information provided."
     
@@ -342,7 +342,7 @@ if st.button("🚀 Let's Go!"):
         st.subheader("💡 Recommendations")
         st.markdown(recommendations, unsafe_allow_html=True)
         st.divider()
-        st_copy_to_clipboard(recommendations, before_copy_label='📋 Click to copy', after_copy_label='✅ AI Recommendations copied!')
+        st_copy_to_clipboard(recommendations, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
 
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made with ❤️ by: Yul</div>", unsafe_allow_html=True)
