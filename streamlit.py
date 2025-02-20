@@ -57,7 +57,7 @@ def get_company_info(company_name):
         return "No company information provided."
     
     prompt = textwrap.dedent(f"""
-        Please build a short company profile for {company_name}. The profile should include the following sections in markdown:
+        Please build a short company profile for {company_name}. The profile should include the following sections:
         - **Mission:** A brief mission statement.
         - **Key Features:** List 3-5 key features of the company.
         - **Vision:** State the long-term vision of the company, highlighting its aspirations and the impact it aims to create.
