@@ -12,7 +12,7 @@ from st_copy_to_clipboard import st_copy_to_clipboard
 logging.basicConfig(level=logging.INFO)
 
 # Set page title and icon
-st.set_page_config(page_title="You Are Awesome!", page_icon="🦄", layout="wide")
+st.set_page_config(page_title="ClickUp Company Profile & Insights Generator", page_icon="🦄", layout="wide")
 
 # Add popover beside the title
 st.title("🦄 ClickUp Workspace, Profile & Strategy Builder ")
