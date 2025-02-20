@@ -16,11 +16,6 @@ st.set_page_config(
     page_title="ClickUp Company Profile & Insights Generator",
     page_icon="🦄",
     layout="wide",
-    menu_items={
-        'ClickUp Help': 'https://help.clickup.com/hc/en-us',
-        'Report a bug': "https://www.extremelycoolapp.com/bug",
-        'About': "# This is a header. This is an *extremely* cool app!"
-    }
 )
 
 # Add popover beside the title
