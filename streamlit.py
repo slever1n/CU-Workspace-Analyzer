@@ -12,10 +12,10 @@ from st_copy_to_clipboard import st_copy_to_clipboard
 logging.basicConfig(level=logging.INFO)
 
 # Set page title and icon
-st.set_page_config(page_title="ClickUp Workspace Analysis", page_icon="🦄", layout="wide")
+st.set_page_config(page_title="You Are Awesome!", page_icon="🦄", layout="wide")
 
 # Add popover beside the title
-st.title("🦄 ClickUp Workspace Analysis")
+st.title("🦄 ClickUp Workspace, Profile & Strategy Builder ")
 with st.popover("ℹ️ How to use"):
     st.markdown("""
     :blue-background[***ClickUp API Key (Optional):***]
