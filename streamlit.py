@@ -18,6 +18,9 @@ st.set_page_config(
     layout="wide",
 )
 
+# hidden div with anchor
+st.markdown("<div id='linkto_top'></div>", unsafe_allow_html=True)
+
 # Add popover beside the title
 st.title("🦄 ClickUp Workspace, Profile & Strategy Builder ")
 with st.popover("ℹ️ How to use"):
@@ -349,6 +352,8 @@ if st.button("🚀 Let's Go!"):
         st.markdown(recommendations, unsafe_allow_html=True)
         st.divider()
         st_copy_to_clipboard(recommendations, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
+        st.markdown("<a href='#linkto_top'>Link to top</a>", unsafe_allow_html=True)
+
 
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made with ❤️ by: Yul</div>", unsafe_allow_html=True)
