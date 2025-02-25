@@ -373,8 +373,6 @@ if st.button("🚀 Let's Go!"):
         st.divider()
         st_copy_to_clipboard(recommendations, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
         st.button("Scroll to Top", on_click=scroll)
-        if st.button("Scroll to Top 2"):
-            st.session_state.scroll_to_top = True
 
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made with ❤️ by: Yul</div>", unsafe_allow_html=True)
