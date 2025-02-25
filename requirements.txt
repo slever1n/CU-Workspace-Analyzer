@@ -6,3 +6,4 @@ aiohttp
 asyncio
 aiohttp
 st-copy-to-clipboard
+streamlit-scroll-to-top
