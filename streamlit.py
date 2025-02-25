@@ -7,7 +7,6 @@ import textwrap
 import concurrent.futures
 import logging
 from st_copy_to_clipboard import st_copy_to_clipboard
-from streamlit_scroll_to_top import scroll_to_here
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -18,25 +17,6 @@ st.set_page_config(
     page_icon="🦄",
     layout="wide",
 )
-
-if 'scroll_to_top' not in st.session_state:
-    st.session_state.scroll_to_top = False
-    
-if 'scroll_to_header' not in st.session_state:
-    st.session_state.scroll_to_header = False
-
-# Step 2: Handle the scroll-to-top action
-if st.session_state.scroll_to_top:
-    scroll_to_here(0, key='top')  # Scroll to the top of the page, 0 means instantly, but you can add a delay (im milliseconds)
-    st.session_state.scroll_to_top = False  # Reset the state after scrolling
-
-# Step 3: Define a scroll function to trigger the state change
-def scroll():
-    st.session_state.scroll_to_top = True
-    
-def scrollheader():
-    st.session_state.scroll_to_header = True
-
 
 # hidden div with anchor
 st.markdown("<div id='linkto_top'></div>", unsafe_allow_html=True)
@@ -372,7 +352,7 @@ if st.button("🚀 Let's Go!"):
         st.markdown(recommendations, unsafe_allow_html=True)
         st.divider()
         st_copy_to_clipboard(recommendations, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
-        st.button("Scroll to Top", on_click=scroll)
+        st.markdown("<a href='#linkto_top'>🔝 Back to top</a>", unsafe_allow_html=True)
 
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: orange; '>A little tool made with ❤️ by: Yul</div>", unsafe_allow_html=True)
