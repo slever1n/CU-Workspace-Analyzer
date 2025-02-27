@@ -29,7 +29,7 @@ with st.popover("ℹ️ How to use"):
     - Enter your ClickUp API key to fetch Workspace data. You can get this from your ClickUp settings and going to Apps to generate an API Key. **Once you enter your API, wait for a few seconds for the app to pull your available Workspaces.**
 
     :blue-background[***Company Name (Optional):***] 
-    - Enter a company name to generate a short company profile.
+    - Enter a company name or website to generate a short company profile. You can get this from the invite or the email of the user.
 
     :blue-background[***Company Use Case:***] 
     - Describe your company's use case (e.g., consulting, project management, customer service) or the agenda mentioned by the user in the email.
