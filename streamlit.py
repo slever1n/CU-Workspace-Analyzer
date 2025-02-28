@@ -314,7 +314,7 @@ if api_key:
 else:
     workspace_id = None
 
-company_name = st.text_input("🏢 Enter Company Name (Optional):")
+company_name = st.text_input("🏢 Enter company name or website (Optional):")
 use_case = st.text_area("🧑‍💻 Describe your company's use case:")
 
 if st.button("🚀 Let's Go!"):
