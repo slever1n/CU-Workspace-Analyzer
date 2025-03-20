@@ -349,7 +349,7 @@ generate_script_option = st.selectbox(" 🎬 Would you like to generate a 5-minu
 
 if st.button("🚀 Let's Go!"):
     if generate_script_option == "Yes":
-    with st.spinner("Generating script..."):
+        with st.spinner("Generating script..."):
         if use_case and company_name:
             script = generate_script(use_case, company_name)
             st.subheader("🎬 Generated Script")
