@@ -313,7 +313,7 @@ def generate_script(use_case, company_info):
         -To add context this is for clients who missed the call, and this video is for them to get an overview of how to use clickup based on the use case.
         -Rules: 
             -do not mention the word onboarding.
-            -greeting should be something like: "Hey! I noticed we missed our call, but I still want to make sure you get the most value from ClickUp. 
+            -greeting should be something like: "Hey! I noticed you missed our call, but not to worry, I still want to make sure you get the most value from ClickUp. 
             I’ve recorded a personalized demo for you, highlighting key features that teams like yours have found useful. 
             I’ve also included insights based on the agenda you mentioned in your email."
             - keep it simple and straightforward
