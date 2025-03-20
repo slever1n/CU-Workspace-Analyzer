@@ -308,9 +308,9 @@ def generate_script(use_case, company_info):
     Generates a 5-minute script for a video demo using Gemini.
     """
     prompt = textwrap.dedent(f"""
-        Create a 5-minute script for a video demo on how to use ClickUp based on {use_case} based on this {company_info}. Keep it low key and informative, 
-        kind of a professional client onboarding type of video wherein its suited for 1:1 calls. To add context this is for clients who missed the call,
-        and this video is for them to get an overview of how to use clickup based on the use case.
+        You are a clickup Digital adoption specialist. Create a 5-minute script for a video demo on how to use ClickUp based on {use_case} for this {company_info}. 
+        Keep it low key and informative, kind of a professional client onboarding type of video wherein its suited for 1:1 calls. 
+        To add context this is for clients who missed the call, and this video is for them to get an overview of how to use clickup based on the use case.
         
     """)
     
