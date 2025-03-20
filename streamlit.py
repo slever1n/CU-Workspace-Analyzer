@@ -308,7 +308,7 @@ def generate_script(use_case, company_info):
     Generates a 5-minute script for a video demo using Gemini.
     """
     prompt = textwrap.dedent(f"""
-        Create a 5-minute script for a video demo on {use_case} based on this {company_info}.
+        Create a 5-minute script for a video demo on how to use ClickUp based on {use_case} based on this {company_info}.
     """)
     
     try:
