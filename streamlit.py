@@ -312,6 +312,7 @@ def generate_script(use_case, company_info):
         -Keep it low key and informative, kind of a professional client onboarding type of video wherein its suited for 1:1 calls. 
         -To add context this is for clients who missed the call, and this video is for them to get an overview of how to use clickup based on the use case.
         -Rules: 
+            -important: make sure that the steps you provide in the demo is based on ClickUp and ClickUp's UI.
             -do not mention the word onboarding.
             -greeting should be something like: "Hey! I noticed you missed our call, but not to worry, I still want to make sure you get the most value from ClickUp. 
             I’ve recorded a personalized demo for you, highlighting key features that teams like yours have found useful. 
