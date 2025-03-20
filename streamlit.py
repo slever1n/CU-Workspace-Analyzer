@@ -345,7 +345,7 @@ company_name = st.text_input("🏢 Enter company name or website (Optional):")
 use_case = st.text_area("🧑‍💻 Describe your company's use case:")
 
 # Add dropdown for Yes/No selection
-generate_script_option = st.selectbox("Would you like to generate a 5-minute script for a video demo?", ["No", "Yes"])
+generate_script_option = st.selectbox(" 🎬 Would you like to generate a 5-minute script for a video demo?", ["No", "Yes"])
 
 if st.button("🚀 Let's Go!"):
     if generate_script_option == "Yes":
