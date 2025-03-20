@@ -317,7 +317,7 @@ def generate_script(use_case, company_info):
             -greeting should be something like: "Hey! I noticed you missed our call, but not to worry, I still want to make sure you get the most value from ClickUp. 
             I’ve recorded a personalized demo for you, highlighting key features that teams like yours have found useful. 
             I’ve also included insights based on the agenda you mentioned in your email."
-            - keep it simple and straightforward
+            - keep it simple and straightforward and dont add music cues. no need for that.
             -try to make the script more readable by adding line breaks or dividers
         
     """)
