@@ -318,6 +318,7 @@ def generate_script(use_case, company_info):
             I’ve recorded a personalized demo for you, highlighting key features that teams like yours have found useful. 
             I’ve also included insights based on the agenda you mentioned in your email."
             - keep it simple and straightforward
+            -try to make the script more readable by adding line breaks or dividers
         
     """)
     
