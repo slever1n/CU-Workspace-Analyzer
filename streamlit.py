@@ -22,7 +22,7 @@ st.set_page_config(
 st.markdown("<div id='linkto_top'></div>", unsafe_allow_html=True)
 
 # Add popover beside the title
-st.title("🦄 ClickUp Workspace, Profile & Strategy Builder ")
+st.title("🦄 ClickUp Digital Adoption Call Handling Helper ")
 with st.popover("ℹ️ How to use"):
     st.markdown("""
     :blue-background[***ClickUp API Key (Optional):***]
