@@ -303,6 +303,33 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
             return response.text
     return "⚠️ AI recommendations are not available because both AI services failed."
 
+def generate_script(use_case, company_info):
+    """
+    Generates a 5-minute script for a video demo using Gemini.
+    """
+    prompt = textwrap.dedent(f"""
+        Create a 5-minute script for a video demo on {use_case} based on this {company_info}.
+    """)
+    
+    try:
+        if gemini_api_key:
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            response = model.generate_content(prompt)
+            return response.text
+        elif openai_api_key:
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response["choices"][0]["message"]["content"]
+        else:
+            return "No AI service available for generating the script."
+    except Exception as e:
+        return f"Error generating script: {str(e)}"
+
 # Input fields available immediately
 api_key = st.text_input("🔑 Enter ClickUp API Key: (Optional)", type="password")
 if api_key:
@@ -319,18 +346,14 @@ use_case = st.text_area("🧑‍💻 Describe your company's use case:")
 
 # Add dropdown for Yes/No selection
 st.markdown("### Would you like to generate a 5-minute script for a video demo?")
-generate_script = st.selectbox("Select Yes or No:", ["No", "Yes"])
+generate_script_option = st.selectbox("Select Yes or No:", ["No", "Yes"])
 
 if st.button("🚀 Let's Go!"):
-    if generate_script == "Yes":
+    if generate_script_option == "Yes":
         if use_case and company_name:
-            prompt = f"Create a 5-minute script for a video demo on {use_case} based on this {company_name}."
-            response = openai.Completion.create(
-                model="text-davinci-003",
-                prompt=prompt,
-                max_tokens=500
-            )
-            st.write(response.choices[0].text)
+            script = generate_script(use_case, company_name)
+            st.subheader("🎬 Generated Script")
+            st.write(script)
         else:
             st.error("Please provide both use case and company info.")
     else:
