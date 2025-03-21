@@ -365,7 +365,7 @@ if st.button("🚀 Let's Go!"):
             script = generate_script(use_case, company_name)
             st.subheader("🎬 Generated Script")
             st.write(script)
-            st_copy_to_clipboard(recommendations, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
+            st_copy_to_clipboard(script, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
             st.markdown("<a href='#linkto_top'>Back to top</a>", unsafe_allow_html=True)
         else:
             st.error("Please provide both use case and company info.")
