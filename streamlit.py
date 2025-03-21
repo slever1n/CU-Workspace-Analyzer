@@ -34,11 +34,15 @@ with st.popover("ℹ️ How to use"):
     :blue-background[***Company Use Case:***] 
     - Describe your company's use case (e.g., consulting, project management, customer service) or the agenda mentioned by the user in the email.
 
+    :blue-background[***5 Minute Script:***] 
+    - Use this when you want to create a video script for No-shows. Set the dropdown to Yes and watch the magic happen. Both Use Case and Company Name have to be present.
+
     **Click the :green-background[*🚀 Let's Go!*] button to:**
 
     1. Fetch and display Workspace metrics(If API Key is entered and based on the Workspace selected).
     2. Generate a company profile.
     3. Generate tailored recommendations based on the provided data.
+    4. Generate a 5-minute video script for No-shows.
 
     *ℹ️ This tool uses Gemini AI to provide AI recommendations and company profile*
     """)
@@ -356,7 +360,7 @@ company_name = st.text_input("🏢 Enter company name or website (Optional):")
 use_case = st.text_area("🧑‍💻 Describe your company's use case:")
 
 # Add dropdown for Yes/No selection
-generate_script_option = st.selectbox(" 🎬 Would you like to generate a 5-minute script for a video demo? (For no-shows)", ["No", "Yes"])
+generate_script_option = st.selectbox(" 🎬 Would you like to generate a 5-minute script for a video demo? (For No-shows)", ["No", "Yes"])
 
 if st.button("🚀 Let's Go!"):
     if generate_script_option == "Yes":
