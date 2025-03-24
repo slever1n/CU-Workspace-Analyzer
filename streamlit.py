@@ -1,4 +1,4 @@
-reimport requests
+import requests
 import streamlit as st
 import time
 import openai
