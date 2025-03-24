@@ -1,4 +1,4 @@
-import requests
+reimport requests
 import streamlit as st
 import time
 import openai
@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 st.set_page_config(
     page_title="ClickUp Company Profile & Insights Generator",
     page_icon="🦄",
-    layout="wide",
+    layout="centered",
 )
 
 # hidden div with anchor
