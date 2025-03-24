@@ -348,10 +348,10 @@ def generate_script(use_case, company_info):
 # Input fields available immediately
 with st.expander("See explanation"):
     api_key = st.text_input("🔑 Enter ClickUp API Key: (Optional)", type="password")
-    if api_key:
-    workspaces = fetch_workspaces(api_key)
-        if workspaces:
-            workspace_id = st.selectbox("💼 Select Workspace:", options=list(workspaces.keys()), format_func=lambda x: workspaces[x])
+        if api_key:
+        workspaces = fetch_workspaces(api_key)
+            if workspaces:
+                workspace_id = st.selectbox("💼 Select Workspace:", options=list(workspaces.keys()), format_func=lambda x: workspaces[x])
             else:
                 st.error("Failed to fetch workspaces. Please check your API key.")
          else:
