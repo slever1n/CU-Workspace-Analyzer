@@ -347,7 +347,7 @@ def generate_script(use_case, company_info):
 
 # Input fields available immediately
 with st.expander("🔑 ClickUp API Key: (Optional)"):
-    api_key = st.text_input("Enter ClickUp API Key: (Optional)", type="password")
+    api_key = st.text_input("", type="password")
     
     if api_key:
         workspaces = fetch_workspaces(api_key)
