@@ -354,9 +354,9 @@ if on:
         workspaces = fetch_workspaces(api_key)
         if workspaces:
             workspace_id = st.selectbox("💼 Select Workspace:", options=list(workspaces.keys()), format_func=lambda x: workspaces[x])
-                else:
-            st.error("Failed to fetch workspaces. Please check your API key.")
         else:
+            st.error("Failed to fetch workspaces. Please check your API key.")
+    else:
         workspace_id = None
 
 company_name = st.text_input("🏢 Enter company name or website (Optional):")
