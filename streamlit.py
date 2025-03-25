@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 # Set page title and icon
 st.set_page_config(
     page_title="ClickUp Company Profile & Insights Generator",
-    page_icon="🦄",
+    page_icon="clickup.png",
     layout="centered",
 )
 
