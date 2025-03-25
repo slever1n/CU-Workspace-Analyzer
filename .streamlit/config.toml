@@ -1,7 +1,8 @@
 [theme]
+base="dark"
 primaryColor="#EDF4F2"
 backgroundColor="#101820"
-secondaryBackgroundColor="#170b3b"
+secondaryBackgroundColor="#9388A2"
 textColor="#e4e2e2"
 
 [browser]
