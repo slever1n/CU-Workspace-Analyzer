@@ -20,7 +20,7 @@ st.set_page_config(
 
 #logo
 
-st.logo("clickup.png", size="large")
+st.logo("clickup.png", size="large", link="https://clickup.com")
 
 # hidden div with anchor
 st.markdown("<div id='linkto_top'></div>", unsafe_allow_html=True)
