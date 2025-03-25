@@ -18,6 +18,13 @@ st.set_page_config(
     layout="centered",
 )
 
+#logo
+
+st.logo(
+    LOGO_URL_LARGE,
+    link="clickup.png",
+    icon_image=LOGO_URL_SMALL,
+
 # hidden div with anchor
 st.markdown("<div id='linkto_top'></div>", unsafe_allow_html=True)
 
