@@ -25,6 +25,8 @@ st.logo(
     link="clickup.png",
     icon_image=LOGO_URL_SMALL,
 
+)
+
 # hidden div with anchor
 st.markdown("<div id='linkto_top'></div>", unsafe_allow_html=True)
 
