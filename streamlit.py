@@ -237,7 +237,7 @@ def get_company_info(company_name):
         return "No company information provided."
     
     prompt = textwrap.dedent(f"""
-        Please build a short company profile for {company_name}. The profile should include the following sections:
+        Please build a short company profile for {company_name}. Go straight to the point and skip usual AI introductions. The profile should include the following sections:
         - **Company Size:** Provide an estimate of the company’s size (e.g., number of employees) based on public information or platforms like LinkedIn. Do not make assumptions, if its unavailable, skip it.
         - **Net Worth:** Include the company’s net worth or valuation if publicly available. Do not make assumptions, if its unavailable, skip it.
         - **Mission:** A brief mission statement.
@@ -278,7 +278,7 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
         And the following company profile:
         {company_profile}
         
-        Please provide a detailed analysis.
+        Please provide a detailed analysis. Go straight to the point and skip usual AI introductions
         
         <h3>📈 Productivity Analysis</h3>
         Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above, if no workspace metric is found, provide tailored recommendations based on the use case.
@@ -317,6 +317,7 @@ def generate_script(use_case, company_info):
         - Keep it low key and informative, kind of a professional client onboarding type of video wherein its suited for 1:1 calls. 
         - To add context this is for clients who missed the call, and this video is for them to get an overview of how to use ClickUp based on the use case.
         - Rules: 
+            - Go straight to the point and skip usual AI introductions.
             - important: make sure that the steps you provide in the demo is based on ClickUp and ClickUp's UI.
             - do not mention the word onboarding.
             - greeting should be something like: "Hey! I noticed you missed our call, but not to worry, I still want to make sure you get the most value from ClickUp.
