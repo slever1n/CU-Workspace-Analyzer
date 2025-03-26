@@ -373,9 +373,11 @@ use_case = st.text_area("🧑‍💻 Describe your company's use case or agenda:
 # Add dropdown for Yes/No selection
 generate_script_option = st.selectbox(" 🎬 Would you like to generate a 5-minute script for a video demo? (For No-shows)", ["Yes", "No"],index=None,
     placeholder="Select option...")
+st.write("🎬 Would you like to generate a 5-minute script for a video demo? (For No-shows)")
+genscript = st.checkbox("Yes!")
 
 if st.button("🚀 Let's Go!"):
-    if generate_script_option == "Yes":
+    if genscript:
         if use_case and company_name:
          with st.spinner("Generating script..."):
             script = generate_script(use_case, company_name)
