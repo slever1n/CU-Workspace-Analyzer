@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 # Set page title and icon
 st.set_page_config(
     page_title="ClickUp Company Profile & Insights Generator",
-    page_icon="clickup.png",
+    page_icon="./files/clickup.png",
     layout="centered",
 )
 
@@ -28,7 +28,7 @@ st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
 
 #logo
 
-st.logo("clickup.png", size="large", link="https://clickup.com")
+st.logo("./files/clickup.png", size="large", link="https://clickup.com")
 
 # hidden div with anchor
 st.markdown("<div id='linkto_top'></div>", unsafe_allow_html=True)
