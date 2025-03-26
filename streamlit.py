@@ -70,7 +70,7 @@ if openai_api_key:
 if gemini_api_key:
     genai.configure(api_key=gemini_api_key)
 
-@st.cache(allow_output_mutation=True)
+@st.cache_data
 def fetch_workspaces(api_key):
     """Fetches the list of workspaces from the ClickUp API."""
     if not api_key:
@@ -94,7 +94,7 @@ def fetch_workspaces(api_key):
         st.error(f"An error occurred: {err}")
     return None
 
-@st.cache(allow_output_mutation=True)
+@st.cache_data
 def fetch_workspace_details(api_key, team_id):
     """Fetches workspace details including spaces, folders, lists, and tasks."""
     headers = {"Authorization": api_key}
