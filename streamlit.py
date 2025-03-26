@@ -36,7 +36,7 @@ st.markdown("<div id='linkto_top'></div>", unsafe_allow_html=True)
 
 
 with st.sidebar:
-    st.title("🦄 ClickUp Digital Adoption Call Handling Helper ")
+    st.title("ClickUp Digital Adoption Call Handling Helper")
     st.markdown("""
     :blue-background[***ClickUp API Key (Optional):***]
     - Enter your ClickUp API key to fetch Workspace data. You can get this from your ClickUp settings and going to Apps to generate an API Key. **Once you enter your API, wait for a few seconds for the app to pull your available Workspaces.**
