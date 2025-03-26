@@ -375,12 +375,12 @@ st.write("")
 if st.button("🚀 Let's Go!"):
     if genscript:
         if use_case and company_name:
-            with st.spinner("Generating script..."):
-                script = generate_script(use_case, company_name)
-                st.subheader("🎬 Generated Script")
-                st.write(script)
-                st_copy_to_clipboard(script, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
-                st.markdown("<a href='#linkto_top'>Back to top</a>", unsafe_allow_html=True)
+         with st.spinner("Generating script..."):
+            script = generate_script(use_case, company_name)
+            st.subheader("🎬 Generated Script")
+            st.write(script)
+            st_copy_to_clipboard(script, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
+            st.markdown("<a href='#linkto_top'>Back to top</a>", unsafe_allow_html=True)
         else:
             st.error("Please provide both use case and company info.")
     else:
@@ -393,9 +393,33 @@ if st.button("🚀 Let's Go!"):
             elif "error" in workspace_data:
                 st.error(workspace_data["error"])
             else:
-                st.success("Workspace data fetched successfully!")
                 st.subheader("📊 Workspace Summary")
                 # Display workspace data as tiles
                 cols = st.columns(4)
                 for idx, (key, value) in enumerate(workspace_data.items()):
-                    with cols[idx % 
+                    with cols[idx % 4]:
+                        st.metric(label=key, value=value)
+        else:
+            workspace_data = None
+
+        # Build and display company profile if a company name is provided
+        if company_name:
+            with st.spinner("Generating company profile..."):
+                company_profile = get_company_info(company_name)
+            st.subheader("🏢 Company Profile")
+            st.markdown(company_profile, unsafe_allow_html=True)
+            st_copy_to_clipboard(company_profile, before_copy_label='📋 Copy', after_copy_label='✅ Company Profile copied!')
+        else:
+            company_profile = "No company information provided."
+        
+        with st.spinner("Generating AI recommendations..."):
+            recommendations = get_ai_recommendations(use_case, company_profile, workspace_data)
+            st.subheader("💡 Recommendations")
+            st.markdown(recommendations, unsafe_allow_html=True)
+            st.divider()
+            st_copy_to_clipboard(recommendations, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
+            st.markdown("<a href='#linkto_top'>Back to top</a>", unsafe_allow_html=True)
+
+st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: #c7c6c6; '>A little tool made with ❤️ by: Yul</div>", unsafe_allow_html=True)
+
+
