@@ -39,7 +39,7 @@ with st.popover("ℹ️ How to use"):
     - Describe your company's use case (e.g., consulting, project management, customer service) or the agenda mentioned by the user in the email.
 
     :blue-background[***5 Minute Script:***] 
-    - Use this when you want to create a video script for No-shows. Set the dropdown to Yes and watch the magic happen. Both Use Case and Company Name have to be present.
+    - Use this when you want to create a video script for No-shows. Tick the checkbox and watch the magic happen. Both Use Case and Company Name have to be present.
 
     **Click the :green-background[*🚀 Let's Go!*] button to:**
 
