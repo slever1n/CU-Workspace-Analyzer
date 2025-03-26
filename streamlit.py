@@ -282,7 +282,7 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
         Please provide a detailed analysis.
         
         <h3>📈 Productivity Analysis</h3>
-        Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above and tailoring strategies to the specified use case.
+        Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above, if no workspace metric is found, provide tailored strategies to the specified use case.
         
         <h3>✅ Actionable Recommendations</h3>
         Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with considerations for the company's core values, product and mission.
@@ -368,7 +368,7 @@ with st.expander("🔑 ClickUp API Key: (Optional)"):
         workspace_id = None
 
 company_name = st.text_input("🏢 Enter company name or website (Optional):")
-use_case = st.text_area("🧑‍💻 Describe your company's use case:")
+use_case = st.text_area("🧑‍💻 Describe your company's use case or agenda:")
 
 # Add dropdown for Yes/No selection
 generate_script_option = st.selectbox(" 🎬 Would you like to generate a 5-minute script for a video demo? (For No-shows)", ["Yes", "No"],index=None,
