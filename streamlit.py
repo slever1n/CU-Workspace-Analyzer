@@ -11,6 +11,14 @@ from st_copy_to_clipboard import st_copy_to_clipboard
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
+
+#css
+
+with open('./files/bg.css') as f:
+    css = f.read()
+
+st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+
 # Set page title and icon
 st.set_page_config(
     page_title="ClickUp Company Profile & Insights Generator",
