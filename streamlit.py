@@ -373,6 +373,7 @@ use_case = st.text_area("🧑‍💻 Describe your company's use case or agenda:
 # Add checkbox for script generation
 st.write("")
 genscript = st.checkbox("🎬 Generate a 5-minute script for a video demo? (For No-shows)", value=False)
+st.write("")
 
 if st.button("🚀 Let's Go!"):
     if genscript:
