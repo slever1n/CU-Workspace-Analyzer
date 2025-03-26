@@ -17,6 +17,7 @@ st.set_page_config(
     page_title="ClickUp Company Profile & Insights Generator",
     page_icon="./files/clickup.png",
     layout="centered",
+    initial_sidebar_state="expanded",
 )
 
 #css
