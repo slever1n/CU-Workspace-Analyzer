@@ -377,10 +377,22 @@ def generate_script(use_case, company_info):
         elif openai_api_key:
             response = openai.ChatCompletion.create(
                 model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": prompt}
-                ]
+                 messages = [
+    {
+        "role": "system",
+        "content": (
+            "You are a ClickUp implementation specialist. "
+            "Give clear, concise, expert-level guidance with no fluff. "
+            "Analyze the provided data to determine how to use ClickUp better. "
+            "When presented with the data, provide recommendations and analysis that reflect a deep understanding "
+            "of ClickUp's capabilities and workflow best practices, guaranteeing their correctness."
+        )
+    },
+    {
+        "role": "user",
+        "content": prompt
+    }
+]
             )
             return response["choices"][0]["message"]["content"]
         else:
