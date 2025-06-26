@@ -311,10 +311,10 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
         Please provide a detailed analysis. Go straight to the point and skip usual AI introductions
         
         <h3>📈 Productivity Analysis</h3>
-        Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above, if no workspace metric is found, provide tail[...]
+        Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above, if no workspace metric is found, provide tailored recommendations based on the use case. Be as detailed as you can.
 
         <h3>✅ Actionable Recommendations</h3>
-        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with conside[...]
+        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with consideration of industry best practices.
 
         <h3>🏆 Best Practices & Tips</h3>
         Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
