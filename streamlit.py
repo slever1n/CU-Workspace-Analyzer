@@ -135,7 +135,7 @@ def fetch_workspace_details(api_key, team_id):
             "⚠️ Overdue Tasks": overdue_tasks,
             "🔥 High Priority Tasks": high_priority_tasks,
             "📝 Unassigned Tasks": unassigned_tasks,
-            "🛠️ Custom Fields Used": ", ".join(sorted(custom_fields_set)) if custom_fields_set else "None"
+            "🛠️ Custom Fields Used": len(custom_fields_set)
         }
     except Exception as e:
         logging.error(f"Exception: {str(e)}")
