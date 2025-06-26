@@ -290,11 +290,7 @@ def get_company_info(company_name):
     {
         "role": "system",
         "content": (
-            "You are a ClickUp implementation specialist. "
-            "Give clear, concise, expert-level guidance with no fluff. "
-            "Analyze the provided data to determine how to use ClickUp better. "
-            "When presented with the data, provide recommendations and analysis that reflect a deep understanding "
-            "of ClickUp's capabilities and workflow best practices, guaranteeing their correctness."
+            "You are a ClickUp implementation specialist. Give clear, detailed, expert-level guidance. Analyze the provided data to determine how to use ClickUp better. When presented with the data, provide recommendations and analysis that reflect a deep understanding of ClickUp's capabilities and workflow best practices, guaranteeing their correctness."
         )
     },
     {
@@ -381,11 +377,7 @@ def generate_script(use_case, company_info):
     {
         "role": "system",
         "content": (
-            "You are a ClickUp implementation specialist. "
-            "Give clear, concise, expert-level guidance with no fluff. "
-            "Analyze the provided data to determine how to use ClickUp better. "
-            "When presented with the data, provide recommendations and analysis that reflect a deep understanding "
-            "of ClickUp's capabilities and workflow best practices, guaranteeing their correctness."
+             "You are a ClickUp implementation specialist. Give clear, detailed, expert-level guidance. Analyze the provided data to determine how to use ClickUp better. When presented with the data, provide recommendations and analysis that reflect a deep understanding of ClickUp's capabilities and workflow best practices, guaranteeing their correctness."
         )
     },
     {
