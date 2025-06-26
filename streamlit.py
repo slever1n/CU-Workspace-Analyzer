@@ -36,7 +36,7 @@ with st.sidebar:
     st.title("ClickUp Company Profile & Insights Generator")
     st.markdown("""
     :blue-background[***ClickUp API Key (Optional):***]
-    - Enter your ClickUp API key to fetch Workspace data. You can get this from your ClickUp settings and going to Apps to generate an API Key. **Once you enter your API, wait for a few seconds for the data to load.**
+    - Enter your ClickUp API key to fetch Workspace data. You can get this from your ClickUp settings and going to Apps to generate an API Key. **Once you enter your API, wait for a few seconds for th[...]
 
     :blue-background[***Company Name (Optional):***] 
     - Enter a company name or website to generate a short company profile. You can get this from the invite or the email of the user.
@@ -96,7 +96,7 @@ def fetch_workspaces(api_key):
 
 @st.cache_data
 def fetch_workspace_details(api_key, team_id):
-    """Fetches workspace details including spaces, folders, lists, and tasks."""
+    """Fetches workspace details including spaces, folders, lists, and tasks. Also returns unassigned tasks and custom fields used."""
     headers = {"Authorization": api_key}
     
     try:
@@ -109,6 +109,8 @@ def fetch_workspace_details(api_key, team_id):
         space_count = len(spaces)
         folder_count, list_count, task_count = 0, 0, 0
         completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+        unassigned_tasks = 0
+        custom_fields_set = set()
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future_to_space = {executor.submit(fetch_space_details, api_key, space["id"]): space for space in spaces}
@@ -120,7 +122,9 @@ def fetch_workspace_details(api_key, team_id):
                 completed_tasks += space_result['completed_tasks']
                 overdue_tasks += space_result['overdue_tasks']
                 high_priority_tasks += space_result['high_priority_tasks']
-        
+                unassigned_tasks += space_result.get('unassigned_tasks', 0)
+                custom_fields_set.update(space_result.get('custom_fields_set', set()))
+
         task_completion_rate = (completed_tasks / task_count * 100) if task_count > 0 else 0
         
         return {
@@ -129,7 +133,9 @@ def fetch_workspace_details(api_key, team_id):
             "🗂️ Lists": list_count,
             "📝 Total Tasks": task_count,
             "⚠️ Overdue Tasks": overdue_tasks,
-            "🔥 High Priority Tasks": high_priority_tasks
+            "🔥 High Priority Tasks": high_priority_tasks,
+            "📝 Unassigned Tasks": unassigned_tasks,
+            "🛠️ Custom Fields Used": ", ".join(sorted(custom_fields_set)) if custom_fields_set else "None"
         }
     except Exception as e:
         logging.error(f"Exception: {str(e)}")
@@ -141,6 +147,8 @@ def fetch_space_details(api_key, space_id):
     headers = {"Authorization": api_key}
     folder_count, list_count, task_count = 0, 0, 0
     completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+    unassigned_tasks = 0
+    custom_fields_set = set()
 
     folders_url = f"https://api.clickup.com/api/v2/space/{space_id}/folder"
     start_time = time.time()
@@ -158,6 +166,8 @@ def fetch_space_details(api_key, space_id):
             completed_tasks += folder_result['completed_tasks']
             overdue_tasks += folder_result['overdue_tasks']
             high_priority_tasks += folder_result['high_priority_tasks']
+            unassigned_tasks += folder_result.get('unassigned_tasks', 0)
+            custom_fields_set.update(folder_result.get('custom_fields_set', set()))
     
     return {
         'folder_count': folder_count,
@@ -165,7 +175,9 @@ def fetch_space_details(api_key, space_id):
         'task_count': task_count,
         'completed_tasks': completed_tasks,
         'overdue_tasks': overdue_tasks,
-        'high_priority_tasks': high_priority_tasks
+        'high_priority_tasks': high_priority_tasks,
+        'unassigned_tasks': unassigned_tasks,
+        'custom_fields_set': custom_fields_set
     }
 
 def fetch_folder_details(api_key, folder_id):
@@ -173,6 +185,8 @@ def fetch_folder_details(api_key, folder_id):
     headers = {"Authorization": api_key}
     list_count, task_count = 0, 0
     completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+    unassigned_tasks = 0
+    custom_fields_set = set()
 
     lists_url = f"https://api.clickup.com/api/v2/folder/{folder_id}/list"
     start_time = time.time()
@@ -189,20 +203,26 @@ def fetch_folder_details(api_key, folder_id):
             completed_tasks += list_result['completed_tasks']
             overdue_tasks += list_result['overdue_tasks']
             high_priority_tasks += list_result['high_priority_tasks']
+            unassigned_tasks += list_result.get('unassigned_tasks', 0)
+            custom_fields_set.update(list_result.get('custom_fields_set', set()))
     
     return {
         'list_count': list_count,
         'task_count': task_count,
         'completed_tasks': completed_tasks,
         'overdue_tasks': overdue_tasks,
-        'high_priority_tasks': high_priority_tasks
+        'high_priority_tasks': high_priority_tasks,
+        'unassigned_tasks': unassigned_tasks,
+        'custom_fields_set': custom_fields_set
     }
 
 def fetch_list_details(api_key, list_id):
-    """Fetches details for a specific list including tasks."""
+    """Fetches details for a specific list including tasks, unassigned tasks, and custom fields used."""
     headers = {"Authorization": api_key}
     task_count = 0
     completed_tasks, overdue_tasks, high_priority_tasks = 0, 0, 0
+    unassigned_tasks = 0
+    custom_fields_set = set()
 
     tasks_url = f"https://api.clickup.com/api/v2/list/{list_id}/task"
     start_time = time.time()
@@ -222,13 +242,23 @@ def fetch_list_details(api_key, list_id):
         overdue_tasks += 1 if task.get("due_date") and int(task["due_date"]) < int(time.time() * 1000) else 0
         high_priority_tasks += 1 if task.get("priority", "") in ["urgent", "high"] else 0
 
-    logging.info(f"Total tasks: {task_count}, Completed tasks: {completed_tasks}")
-    
+        # Count unassigned tasks
+        if not task.get("assignees"):
+            unassigned_tasks += 1
+
+        # Gather custom fields
+        for cf in task.get("custom_fields", []):
+            custom_fields_set.add(cf.get("name", cf.get("id", "Unknown")))
+
+    logging.info(f"Total tasks: {task_count}, Completed tasks: {completed_tasks}, Unassigned: {unassigned_tasks}")
+
     return {
         'task_count': task_count,
         'completed_tasks': completed_tasks,
         'overdue_tasks': overdue_tasks,
-        'high_priority_tasks': high_priority_tasks
+        'high_priority_tasks': high_priority_tasks,
+        'unassigned_tasks': unassigned_tasks,
+        'custom_fields_set': custom_fields_set
     }
 
 def get_company_info(company_name):
@@ -238,7 +268,7 @@ def get_company_info(company_name):
     
     prompt = textwrap.dedent(f"""
         Please build a short company profile for {company_name}. Go straight to the point and skip usual AI introductions. The profile should include the following sections:
-        - **Company Size:** Provide an estimate of the company’s size (e.g., number of employees) based on public information or platforms like LinkedIn. Do not make assumptions, if its unavailable, skip it.
+        - **Company Size:** Provide an estimate of the company’s size (e.g., number of employees) based on public information or platforms like LinkedIn. Do not make assumptions, if its unavailable,[...]
         - **Net Worth:** Include the company’s net worth or valuation if publicly available. Do not make assumptions, if its unavailable, skip it.
         - **Mission:** A brief mission statement.
         - **Key Features:** List 3-5 key features of the company.
@@ -281,14 +311,14 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
         Please provide a detailed analysis. Go straight to the point and skip usual AI introductions
         
         <h3>📈 Productivity Analysis</h3>
-        Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above, if no workspace metric is found, provide tailored recommendations based on the use case.
-        
+        Evaluate the current workspace structure and workflow. Provide insights on how to optimize productivity by leveraging the workspace metrics above, if no workspace metric is found, provide tail[...]
+
         <h3>✅ Actionable Recommendations</h3>
-        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with consideration of industry best practices.
-        
+        Suggest practical steps to improve efficiency and organization, addressing specific challenges highlighted by the workspace data and the unique requirements of the use case, along with conside[...]
+
         <h3>🏆 Best Practices & Tips</h3>
         Share industry-specific best practices and tips that can help maximize workflow efficiency for a company with this use case.
-        
+
         <h3>🛠️ Useful ClickUp Templates & Resources</h3>
         Recommend relevant ClickUp templates and resources. Provide hyperlinks to useful resources on clickup.com, university.clickup.com, or help.clickup.com. Provide 5-8 links.
     """)
@@ -376,12 +406,12 @@ st.write("")
 if st.button("🚀 Let's Go!"):
     if genscript:
         if use_case and company_name:
-         with st.spinner("Generating script..."):
-            script = generate_script(use_case, company_name)
-            st.subheader("🎬 Generated Script")
-            st.write(script)
-            st_copy_to_clipboard(script, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
-            st.markdown("<a href='#linkto_top'>Back to top</a>", unsafe_allow_html=True)
+            with st.spinner("Generating script..."):
+                script = generate_script(use_case, company_name)
+                st.subheader("🎬 Generated Script")
+                st.write(script)
+                st_copy_to_clipboard(script, before_copy_label='📋 Copy', after_copy_label='✅ Recommendations copied!')
+                st.markdown("<a href='#linkto_top'>Back to top</a>", unsafe_allow_html=True)
         else:
             st.error("Please provide both use case and company info.")
     else:
@@ -422,5 +452,3 @@ if st.button("🚀 Let's Go!"):
             st.markdown("<a href='#linkto_top'>Back to top</a>", unsafe_allow_html=True)
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: #c7c6c6; '>A little tool made with ❤️ by: Yul</div>", unsafe_allow_html=True)
-
-
