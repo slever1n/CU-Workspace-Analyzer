@@ -280,7 +280,7 @@ def get_company_info(company_name):
     
     try:
         if gemini_api_key:
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.5-pro")
             response = model.generate_content(prompt)
             return response.text
         elif openai_api_key:
@@ -343,7 +343,7 @@ def get_ai_recommendations(use_case, company_profile, workspace_details):
             return response["choices"][0]["message"]["content"]
     except Exception as e:
         if gemini_api_key:
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.5-pro")
             response = model.generate_content(prompt)
             return response.text
     return "⚠️ AI recommendations are not available because both AI services failed."
@@ -367,7 +367,7 @@ def generate_script(use_case, company_info):
     
     try:
         if gemini_api_key:
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.5-pro")
             response = model.generate_content(prompt)
             return response.text
         elif openai_api_key:
