@@ -282,7 +282,11 @@ def get_company_info(company_name):
         if gemini_api_key:
             model = genai.GenerativeModel("gemini-2.5-pro")
             response = model.generate_content(prompt)
-            return response.text
+            if hasattr(response, "text") and response.text:
+                return response.text
+            else:
+                logging.error("Gemini response did not contain text.")
+                return "⚠️ Gemini AI did not return any content. This may be a temporary error or due to too many requests. Please try again later."
         elif openai_api_key:
             response = openai.ChatCompletion.create(
                 model="gpt-4o",
@@ -369,7 +373,11 @@ def generate_script(use_case, company_info):
         if gemini_api_key:
             model = genai.GenerativeModel("gemini-2.5-pro")
             response = model.generate_content(prompt)
-            return response.text
+            if hasattr(response, "text") and response.text:
+                return response.text
+            else:
+                logging.error("Gemini response did not contain text.")
+                return "⚠️ Gemini AI did not return any content. This may be a temporary error or due to too many requests. Please try again later."
         elif openai_api_key:
             response = openai.ChatCompletion.create(
                 model="gpt-4o",
@@ -468,3 +476,4 @@ if st.button("🚀 Let's Go!"):
             st.markdown("<a href='#linkto_top'>Back to top</a>", unsafe_allow_html=True)
 
 st.markdown("<div style='position: fixed; bottom: 10px; left: 10px; font-size: 12px; color: #c7c6c6; '>A little tool made with ❤️ by: Yul</div>", unsafe_allow_html=True)
+
