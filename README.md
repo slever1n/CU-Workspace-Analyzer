@@ -110,5 +110,7 @@ This project is open source. Feel free to use, modify, and distribute it as need
 
 Made by Yul <3
 
+Testing an automation within ClickUp to update the Wiki based on changes made in this file
+
 - [@sleverin](https://github.com/slever1n)
 
