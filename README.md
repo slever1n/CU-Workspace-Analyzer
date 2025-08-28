@@ -108,7 +108,9 @@ This project is open source. Feel free to use, modify, and distribute it as need
 
 ##👤 Authors
 
-Made by Yul <3<3<3
+Made by Yul <3<3<3<3<3
+
+I'm currently testing an automation
 
 - [@sleverin](https://github.com/slever1n)
 
