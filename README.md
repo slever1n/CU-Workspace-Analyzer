@@ -108,9 +108,7 @@ This project is open source. Feel free to use, modify, and distribute it as need
 
 ##👤 Authors
 
-Made by Yul <3<3<3<3<3
-
-I'm currently testing an automation where it updates a Clickup doc
+Made by Yul <3
 
 - [@sleverin](https://github.com/slever1n)
 
