@@ -110,7 +110,7 @@ This project is open source. Feel free to use, modify, and distribute it as need
 
 Made by Yul <3<3<3<3<3
 
-I'm currently testing an automation
+I'm currently testing an automation where it updates a Clickup doc
 
 - [@sleverin](https://github.com/slever1n)
 
