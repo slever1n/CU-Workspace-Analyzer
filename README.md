@@ -110,7 +110,5 @@ This project is open source. Feel free to use, modify, and distribute it as need
 
 Made by Yul <3
 
-Testing an automation with ClickUp last tryyyyy
-
 - [@sleverin](https://github.com/slever1n)
 
