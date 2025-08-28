@@ -108,7 +108,7 @@ This project is open source. Feel free to use, modify, and distribute it as need
 
 ##👤 Authors
 
-Made by Yul
+Made by Yul <3
 
 - [@sleverin](https://github.com/slever1n)
 
